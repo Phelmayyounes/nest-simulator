@@ -176,6 +176,11 @@ public:
     weight_ = w;
   }
 
+  void set_permanence(double perm)
+  {
+    permanence_ = perm
+  }    
+
 private:
   double
   facilitate_( double w, double kplus )
@@ -195,6 +200,7 @@ private:
 
   // data members of each connection
   double weight_;
+  double permanence_;
   double tau_plus_;
   double lambda_;
   double alpha_;
@@ -252,15 +258,26 @@ STDPConnection< targetidentifierT >::send( Event& e,
     // get_history() should make sure that
     // start->t_ > t_lastspike - dendritic_delay, i.e. minus_dt < 0
     assert( minus_dt < -1.0 * kernel().connection_manager.get_stdp_eps() );
-    weight_ = facilitate_( weight_, Kplus_ * std::exp( minus_dt / tau_plus_ ) );
+    permanence_ = facilitate_( permanence_, Kplus_ * std::exp( minus_dt / tau_plus_ ) );
   }
 
   // depression due to new pre-synaptic spike
-  weight_ =
-    depress_( weight_, target->get_K_value( t_spike - dendritic_delay ) );
+  permanence_ =
+    depress_( permanence_, target->get_K_value( t_spike - dendritic_delay ) );
 
+  // update weight
+  if (permanence_ > 10.0)
+  {
+    weight_ = 0.1
+  }  
+  else
+  {
+    weight_ = 100
+  }
+      
   e.set_receiver( *target );
   e.set_weight( weight_ );
+  e.set_permanence( permanence_ )
   // use accessor functions (inherited from Connection< >) to obtain delay in
   // steps and rport
   e.set_delay_steps( get_delay_steps() );
@@ -277,6 +294,7 @@ template < typename targetidentifierT >
 STDPConnection< targetidentifierT >::STDPConnection()
   : ConnectionBase()
   , weight_( 1.0 )
+  , permanence_(1.0)
   , tau_plus_( 20.0 )
   , lambda_( 0.01 )
   , alpha_( 1.0 )
@@ -293,6 +311,7 @@ STDPConnection< targetidentifierT >::STDPConnection(
   const STDPConnection< targetidentifierT >& rhs )
   : ConnectionBase( rhs )
   , weight_( rhs.weight_ )
+  , permanence_(rhs.permanence)  
   , tau_plus_( rhs.tau_plus_ )
   , lambda_( rhs.lambda_ )
   , alpha_( rhs.alpha_ )
@@ -309,7 +328,8 @@ void
 STDPConnection< targetidentifierT >::get_status( DictionaryDatum& d ) const
 {
   ConnectionBase::get_status( d );
-  def< double >( d, names::weight, weight_ );
+  def< double >( d, names::weight, weight_ ); 
+  def< double >( d, names::permanence, permanence_);
   def< double >( d, names::tau_plus, tau_plus_ );
   def< double >( d, names::lambda, lambda_ );
   def< double >( d, names::alpha, alpha_ );
@@ -325,7 +345,8 @@ STDPConnection< targetidentifierT >::set_status( const DictionaryDatum& d,
   ConnectorModel& cm )
 {
   ConnectionBase::set_status( d, cm );
-  updateValue< double >( d, names::weight, weight_ );
+  updateValue< double >( d, names::weight, weight_ ); 
+  updateValue< double >( d, names::permanence, permanence_ );
   updateValue< double >( d, names::tau_plus, tau_plus_ );
   updateValue< double >( d, names::lambda, lambda_ );
   updateValue< double >( d, names::alpha, alpha_ );
