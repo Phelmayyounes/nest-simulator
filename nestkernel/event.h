@@ -249,6 +249,12 @@ public:
   void set_weight( weight t );
 
   /**
+   *  set permanence of the event
+   */  
+
+  void set_permanence(permanence t)
+
+  /**
    * Set drift_factor of the event (see DiffusionConnectionEvent).
    */
   virtual void set_drift_factor( weight t ){};
@@ -1312,6 +1318,13 @@ inline void
 Event::set_weight( weight w )
 {
   w_ = w;
+}
+
+
+inline void
+Event::set_permanence( permanence perm )
+{
+  permanence_ = perm;
 }
 
 inline Time const&

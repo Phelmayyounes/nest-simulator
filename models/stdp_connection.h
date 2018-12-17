@@ -311,7 +311,7 @@ STDPConnection< targetidentifierT >::STDPConnection(
   const STDPConnection< targetidentifierT >& rhs )
   : ConnectionBase( rhs )
   , weight_( rhs.weight_ )
-  , permanence_(rhs.permanence)  
+  , permanence_(rhs.permanence_)  
   , tau_plus_( rhs.tau_plus_ )
   , lambda_( rhs.lambda_ )
   , alpha_( rhs.alpha_ )
