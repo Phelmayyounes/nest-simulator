@@ -492,6 +492,8 @@ const Name vt( "vt" );
 
 const Name w( "w" );
 const Name weight( "weight" );
+const Name permanence( "permanence" );
+const Name th_perm( "th_perm" );
 const Name weight_per_lut_entry( "weight_per_lut_entry" );
 const Name weight_recorder( "weight_recorder" );
 const Name weighted_spikes_ex( "weighted_spikes_ex" );
@@ -510,6 +512,7 @@ const Name withtime( "withtime" );
 const Name withweight( "withweight" );
 const Name Wmax( "Wmax" );
 const Name Wmin( "Wmin" );
+const Name Pmax( "Pmax" );
 
 const Name x( "x" );
 

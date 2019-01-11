@@ -192,7 +192,7 @@ public:
     const synindex syn_id,
     const DictionaryDatum& d,
     const double delay,
-    const double weight );
+    const double weight);
 
   ConnectorModel* clone( std::string ) const;
 

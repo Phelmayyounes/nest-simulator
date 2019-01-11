@@ -511,6 +511,8 @@ extern const Name vt;
 
 extern const Name w;
 extern const Name weight;
+extern const Name permanence;
+extern const Name th_perm;
 extern const Name weight_per_lut_entry;
 extern const Name weight_recorder;
 extern const Name weighted_spikes_ex;
@@ -529,6 +531,7 @@ extern const Name withtime;
 extern const Name withweight;
 extern const Name Wmax;
 extern const Name Wmin;
+extern const Name Pmax;
 
 extern const Name x;
 

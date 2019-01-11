@@ -178,24 +178,24 @@ public:
 
   void set_permanence(double perm)
   {
-    permanence_ = perm
+    permanence_ = perm;
   }    
 
 private:
   double
-  facilitate_( double w, double kplus )
+  facilitate_( double perm, double kplus )
   {
-    double norm_w = ( w / Wmax_ )
-      + ( lambda_ * std::pow( 1.0 - ( w / Wmax_ ), mu_plus_ ) * kplus );
-    return norm_w < 1.0 ? norm_w * Wmax_ : Wmax_;
+    double norm_perm = ( perm / Pmax_ )
+      + ( lambda_ * std::pow( 1.0 - ( perm / Pmax_ ), mu_plus_ ) * kplus );
+    return norm_perm < 1.0 ? norm_perm * Pmax_ : Pmax_;
   }
 
   double
-  depress_( double w, double kminus )
+  depress_( double perm, double kminus )
   {
-    double norm_w = ( w / Wmax_ )
-      - ( alpha_ * lambda_ * std::pow( w / Wmax_, mu_minus_ ) * kminus );
-    return norm_w > 0.0 ? norm_w * Wmax_ : 0.0;
+    double norm_perm = ( perm / Pmax_ )
+      - ( alpha_ * lambda_ * std::pow( perm / Pmax_, mu_minus_ ) * kminus );
+    return norm_perm > 0.0 ? norm_perm * Pmax_ : 0.0;
   }
 
   // data members of each connection
@@ -207,7 +207,10 @@ private:
   double mu_plus_;
   double mu_minus_;
   double Wmax_;
+  double Pmax_;
   double Kplus_;
+
+  double th_perm_;
 
   double t_lastspike_;
 };
@@ -266,18 +269,18 @@ STDPConnection< targetidentifierT >::send( Event& e,
     depress_( permanence_, target->get_K_value( t_spike - dendritic_delay ) );
 
   // update weight
-  if (permanence_ > 10.0)
+  if (permanence_ > th_perm_)
   {
-    weight_ = 0.1
+    weight_ = Wmax_;
   }  
   else
   {
-    weight_ = 100
+    weight_ = 0.1;
   }
       
   e.set_receiver( *target );
   e.set_weight( weight_ );
-  e.set_permanence( permanence_ )
+  set_permanence( permanence_ );
   // use accessor functions (inherited from Connection< >) to obtain delay in
   // steps and rport
   e.set_delay_steps( get_delay_steps() );
@@ -301,6 +304,8 @@ STDPConnection< targetidentifierT >::STDPConnection()
   , mu_plus_( 1.0 )
   , mu_minus_( 1.0 )
   , Wmax_( 100.0 )
+  , Pmax_( 4000.0 )  
+  , th_perm_( 2000.0 )  
   , Kplus_( 0.0 )
   , t_lastspike_( 0.0 )
 {
@@ -312,12 +317,14 @@ STDPConnection< targetidentifierT >::STDPConnection(
   : ConnectionBase( rhs )
   , weight_( rhs.weight_ )
   , permanence_(rhs.permanence_)  
+  , th_perm_(rhs.th_perm_)
   , tau_plus_( rhs.tau_plus_ )
   , lambda_( rhs.lambda_ )
   , alpha_( rhs.alpha_ )
   , mu_plus_( rhs.mu_plus_ )
   , mu_minus_( rhs.mu_minus_ )
   , Wmax_( rhs.Wmax_ )
+  , Pmax_( rhs.Pmax_ )  
   , Kplus_( rhs.Kplus_ )
   , t_lastspike_( rhs.t_lastspike_ )
 {
@@ -330,12 +337,14 @@ STDPConnection< targetidentifierT >::get_status( DictionaryDatum& d ) const
   ConnectionBase::get_status( d );
   def< double >( d, names::weight, weight_ ); 
   def< double >( d, names::permanence, permanence_);
+  def< double >( d, names::th_perm, th_perm_);
   def< double >( d, names::tau_plus, tau_plus_ );
   def< double >( d, names::lambda, lambda_ );
   def< double >( d, names::alpha, alpha_ );
   def< double >( d, names::mu_plus, mu_plus_ );
   def< double >( d, names::mu_minus, mu_minus_ );
-  def< double >( d, names::Wmax, Wmax_ );
+  def< double >( d, names::Wmax, Wmax_ ); 
+  def< double >( d, names::Pmax, Pmax_ );
   def< long >( d, names::size_of, sizeof( *this ) );
 }
 
@@ -347,12 +356,14 @@ STDPConnection< targetidentifierT >::set_status( const DictionaryDatum& d,
   ConnectionBase::set_status( d, cm );
   updateValue< double >( d, names::weight, weight_ ); 
   updateValue< double >( d, names::permanence, permanence_ );
+  updateValue< double >( d, names::th_perm, th_perm_ ); 
   updateValue< double >( d, names::tau_plus, tau_plus_ );
   updateValue< double >( d, names::lambda, lambda_ );
   updateValue< double >( d, names::alpha, alpha_ );
   updateValue< double >( d, names::mu_plus, mu_plus_ );
   updateValue< double >( d, names::mu_minus, mu_minus_ );
   updateValue< double >( d, names::Wmax, Wmax_ );
+  updateValue< double >( d, names::Pmax, Pmax_ );
 
   // check if weight_ and Wmax_ has the same sign
   if ( not( ( ( weight_ >= 0 ) - ( weight_ < 0 ) )

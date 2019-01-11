@@ -149,6 +149,17 @@ const rport invalid_port_ = -1;
  */
 typedef double weight;
 
+
+/**
+ * Permanence of a connection.
+ * Connections have a permanence which is used to scale the influence
+ * of an event.
+ * A permanence of 0 should have the same influence on the receiving node
+ * as a non-existing connection. Otherwise, there is no default range for
+ * connection permanences.
+ */
+typedef double permanence;
+
 /**
  * Delay of a connection.
  * The delay defines the number of simulation steps which elapse
