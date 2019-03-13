@@ -20,8 +20,8 @@
  *
  */
 
-#ifndef STDP_CONNECTION_H
-#define STDP_CONNECTION_H
+#ifndef STDP_CONNECTION_HTM_H
+#define STDP_CONNECTION_HTM_H
 
 // C++ includes:
 #include <cmath>
@@ -97,7 +97,7 @@ SeeAlso: synapsedict, tsodyks_synapse, static_synapse
 // connections are templates of target identifier type (used for pointer /
 // target index addressing) derived from generic connection template
 template < typename targetidentifierT >
-class STDPConnection : public Connection< targetidentifierT >
+class STDPConnectionHTM : public Connection< targetidentifierT >
 {
 
 public:
@@ -108,14 +108,14 @@ public:
    * Default Constructor.
    * Sets default values for all parameters. Needed by GenericConnectorModel.
    */
-  STDPConnection();
+  STDPConnectionHTM();
 
 
   /**
    * Copy constructor.
    * Needs to be defined properly in order for GenericConnector to work.
    */
-  STDPConnection( const STDPConnection& );
+  STDPConnectionHTM( const STDPConnectionHTM& );
 
   // Explicitly declare all methods inherited from the dependent base
   // ConnectionBase. This avoids explicit name prefixes in all places these
@@ -176,32 +176,52 @@ public:
     weight_ = w;
   }
 
+  void set_permanence(double perm)
+  {
+    permanence_ = perm;
+  }    
+
 private:
   double
-  facilitate_( double w, double kplus )
+  facilitate_( double perm )
   {
-    double norm_w = ( w / Wmax_ )
-      + ( lambda_ * std::pow( 1.0 - ( w / Wmax_ ), mu_plus_ ) * kplus );
-    return norm_w < 1.0 ? norm_w * Wmax_ : Wmax_;
+    // printf("# Facilitate #");
+    perm = perm + Delta_;
+    return perm < Pmax_ ? perm : Pmax_;
   }
 
   double
-  depress_( double w, double kminus )
+  depress_( double perm )
   {
-      double norm_w = ( w / Wmax_ )
-      - ( alpha_ * lambda_ * std::pow( w / Wmax_, mu_minus_ ) * kminus );
-    return norm_w > 0.0 ? norm_w * Wmax_ : 0.0;
+    // printf("# Depress #");
+    perm = perm - Delta_/2;
+    return perm > 0 ? perm : 0.0;
   }
+
+  double
+  depress_exp_( double perm, double kminus )
+  {
+    double norm_perm = ( perm / Pmax_ )
+      - ( alpha_ * lambda_ * std::pow( perm / Pmax_, mu_minus_ ) * kminus );
+    return norm_perm > 0.0 ? norm_perm * Pmax_ : 0.0;
+  }
+
+
 
   // data members of each connection
   double weight_;
+  double permanence_;
   double tau_plus_;
   double lambda_;
   double alpha_;
   double mu_plus_;
   double mu_minus_;
   double Wmax_;
+  double Pmax_;
   double Kplus_;
+  double Delta_;
+
+  double th_perm_;
 
   double t_lastspike_;
 };
@@ -215,7 +235,7 @@ private:
  */
 template < typename targetidentifierT >
 inline void
-STDPConnection< targetidentifierT >::send( Event& e,
+STDPConnectionHTM< targetidentifierT >::send( Event& e,
   thread t,
   const CommonSynapseProperties& )
 {
@@ -245,22 +265,44 @@ STDPConnection< targetidentifierT >::send( Event& e,
     &finish );
   // facilitation due to post-synaptic spikes since last pre-synaptic spike
   double minus_dt;
+  
   while ( start != finish )
   {
-    minus_dt = t_lastspike_ - ( start->t_ + dendritic_delay );
+    minus_dt = t_lastspike_ - ( start->t_ + dendritic_delay ); 
+    // printf("\n last spike %lf, start %lf, minus_dt %f, t %f", t_lastspike_ , start->t_, minus_dt, t_spike);
     ++start;
+
     // get_history() should make sure that
     // start->t_ > t_lastspike - dendritic_delay, i.e. minus_dt < 0
     assert( minus_dt < -1.0 * kernel().connection_manager.get_stdp_eps() );
-    weight_ = facilitate_( weight_, Kplus_ * std::exp( minus_dt / tau_plus_ ) );
+    if (minus_dt < -30. &&  minus_dt > -36. )
+    {
+        permanence_ = facilitate_( permanence_ );
+    }
+    
   }
 
   // depression due to new pre-synaptic spike
-  weight_ =
-    depress_( weight_, target->get_K_value( t_spike - dendritic_delay ) );
+  // printf("history %lf", history_empty_check());
+  if ( target->history_empty_check() != 0 ) 
+  {
+    permanence_ = depress_( permanence_ );
+  }
+  // permanence_ = depress_exp_( permanence_, target->get_K_value( t_spike - dendritic_delay ) );
 
+  // update weight
+  if (permanence_ > th_perm_)
+  {
+    weight_ = Wmax_;
+  }  
+  else
+  {
+    weight_ = 0.1;
+  }
+      
   e.set_receiver( *target );
   e.set_weight( weight_ );
+  set_permanence( permanence_ );
   // use accessor functions (inherited from Connection< >) to obtain delay in
   // steps and rport
   e.set_delay_steps( get_delay_steps() );
@@ -274,64 +316,80 @@ STDPConnection< targetidentifierT >::send( Event& e,
 
 
 template < typename targetidentifierT >
-STDPConnection< targetidentifierT >::STDPConnection()
+STDPConnectionHTM< targetidentifierT >::STDPConnectionHTM()
   : ConnectionBase()
-  , weight_( 1.0 )
+  , weight_( 0.1 )
+  , permanence_(1.0)
   , tau_plus_( 20.0 )
   , lambda_( 0.01 )
   , alpha_( 1.0 )
   , mu_plus_( 1.0 )
   , mu_minus_( 1.0 )
   , Wmax_( 100.0 )
-  , Kplus_( 0.0 )
+  , Pmax_( 4000.0 )  
+  , th_perm_( 2000.0 )  
+  , Kplus_( 0.0 ) 
+  , Delta_( 0.1 )
   , t_lastspike_( 0.0 )
 {
 }
 
 template < typename targetidentifierT >
-STDPConnection< targetidentifierT >::STDPConnection(
-  const STDPConnection< targetidentifierT >& rhs )
+STDPConnectionHTM< targetidentifierT >::STDPConnectionHTM(
+  const STDPConnectionHTM< targetidentifierT >& rhs )
   : ConnectionBase( rhs )
   , weight_( rhs.weight_ )
+  , permanence_(rhs.permanence_)  
+  , th_perm_(rhs.th_perm_)
   , tau_plus_( rhs.tau_plus_ )
   , lambda_( rhs.lambda_ )
   , alpha_( rhs.alpha_ )
   , mu_plus_( rhs.mu_plus_ )
   , mu_minus_( rhs.mu_minus_ )
   , Wmax_( rhs.Wmax_ )
+  , Pmax_( rhs.Pmax_ )  
   , Kplus_( rhs.Kplus_ )
+  , Delta_( rhs.Delta_ )  
   , t_lastspike_( rhs.t_lastspike_ )
 {
 }
 
 template < typename targetidentifierT >
 void
-STDPConnection< targetidentifierT >::get_status( DictionaryDatum& d ) const
+STDPConnectionHTM< targetidentifierT >::get_status( DictionaryDatum& d ) const
 {
   ConnectionBase::get_status( d );
-  def< double >( d, names::weight, weight_ );
+  def< double >( d, names::weight, weight_ ); 
+  def< double >( d, names::permanence, permanence_);
+  def< double >( d, names::th_perm, th_perm_);
   def< double >( d, names::tau_plus, tau_plus_ );
   def< double >( d, names::lambda, lambda_ );
   def< double >( d, names::alpha, alpha_ );
   def< double >( d, names::mu_plus, mu_plus_ );
   def< double >( d, names::mu_minus, mu_minus_ );
-  def< double >( d, names::Wmax, Wmax_ );
+  def< double >( d, names::Wmax, Wmax_ ); 
+  def< double >( d, names::Pmax, Pmax_ ); 
+  def< double >( d, names::Delta, Delta_ );
   def< long >( d, names::size_of, sizeof( *this ) );
 }
 
 template < typename targetidentifierT >
 void
-STDPConnection< targetidentifierT >::set_status( const DictionaryDatum& d,
+STDPConnectionHTM< targetidentifierT >::set_status( const DictionaryDatum& d,
   ConnectorModel& cm )
 {
   ConnectionBase::set_status( d, cm );
-  updateValue< double >( d, names::weight, weight_ );
+  updateValue< double >( d, names::weight, weight_ ); 
+  updateValue< double >( d, names::permanence, permanence_ );
+  updateValue< double >( d, names::th_perm, th_perm_ ); 
   updateValue< double >( d, names::tau_plus, tau_plus_ );
   updateValue< double >( d, names::lambda, lambda_ );
   updateValue< double >( d, names::alpha, alpha_ );
   updateValue< double >( d, names::mu_plus, mu_plus_ );
   updateValue< double >( d, names::mu_minus, mu_minus_ );
   updateValue< double >( d, names::Wmax, Wmax_ );
+  updateValue< double >( d, names::Pmax, Pmax_ );
+  updateValue< double >( d, names::Delta, Delta_ );
 
   // check if weight_ and Wmax_ has the same sign
   if ( not( ( ( weight_ >= 0 ) - ( weight_ < 0 ) )
@@ -344,4 +402,3 @@ STDPConnection< targetidentifierT >::set_status( const DictionaryDatum& d,
 } // of namespace nest
 
 #endif // of #ifndef STDP_CONNECTION_H
-

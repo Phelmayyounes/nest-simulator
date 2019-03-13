@@ -688,6 +688,12 @@ public:
   virtual void get_K_values( double t, double& Kminus, double& triplet_Kminus );
 
   /**
+  * check the spike history if empty
+  * 
+  */
+  virtual double history_empty_check();
+
+  /**
   * return the spike history for (t1,t2].
   * @throws UnexpectedEvent
   */

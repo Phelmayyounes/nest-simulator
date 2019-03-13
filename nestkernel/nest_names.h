@@ -513,6 +513,7 @@ extern const Name w;
 extern const Name weight;
 extern const Name permanence;
 extern const Name th_perm;
+extern const Name Delta;
 extern const Name weight_per_lut_entry;
 extern const Name weight_recorder;
 extern const Name weighted_spikes_ex;

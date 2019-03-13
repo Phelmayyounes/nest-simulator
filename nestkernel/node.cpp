@@ -426,6 +426,12 @@ Node::sends_secondary_event( DelayedRateConnectionEvent& )
 
 
 double
+Node::history_empty_check()
+{
+  throw UnexpectedEvent();
+}
+
+double
 Node::get_K_value( double )
 {
   throw UnexpectedEvent();

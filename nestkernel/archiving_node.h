@@ -129,6 +129,11 @@ public:
   void connect_synaptic_element( Name name, int n );
 
   /**
+   * \fn double history_empty_check(long t)
+   */
+  double history_empty_check();
+
+  /**
    * \fn double get_K_value(long t)
    * return the Kminus value at t (in ms).
    */

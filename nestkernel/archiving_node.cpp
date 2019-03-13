@@ -95,6 +95,13 @@ Archiving_Node::register_stdp_connection( double t_first_read )
   n_incoming_++;
 }
 
+
+double
+nest::Archiving_Node::history_empty_check()
+{
+  return history_.empty();
+}
+
 double
 nest::Archiving_Node::get_K_value( double t )
 {

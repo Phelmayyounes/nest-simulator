@@ -131,6 +131,7 @@
 #include "static_connection.h"
 #include "static_connection_hom_w.h"
 #include "stdp_connection.h"
+#include "stdp_connection_htm.h"
 #include "stdp_connection_facetshw_hom.h"
 #include "stdp_connection_facetshw_hom_impl.h"
 #include "stdp_connection_hom.h"
@@ -503,7 +504,6 @@ ModelsModule::init( SLIInterpreter* )
       /*requires_symmetric=*/false,
       /*supports_wfr=*/true );
 
-
   /** @BeginDocumentation
      Name: stdp_synapse_hpc - Variant of stdp_synapse with low memory
      consumption.
@@ -518,6 +518,15 @@ ModelsModule::init( SLIInterpreter* )
     .register_connection_model< STDPConnection< TargetIdentifierIndex > >(
       "stdp_synapse_hpc" );
 
+
+  /** @BeginDocumentation
+     Name: stdp_synapse_htm
+  */
+
+  kernel()
+    .model_manager
+    .register_connection_model< STDPConnectionHTM< TargetIdentifierPtrRport > >(
+      "stdp_synapse_htm" );
 
   /** @BeginDocumentation
      Name: stdp_pl_synapse_hom_hpc - Variant of stdp_pl_synapse_hom with low
