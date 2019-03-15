@@ -493,6 +493,8 @@ const Name vt( "vt" );
 const Name w( "w" );
 const Name weight( "weight" );
 const Name permanence( "permanence" );
+const Name t_mean( "t_mean" );
+const Name t_var( "t_var" );
 const Name th_perm( "th_perm" );
 const Name Delta("Delta");
 const Name weight_per_lut_entry( "weight_per_lut_entry" );

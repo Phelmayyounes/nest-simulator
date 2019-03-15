@@ -512,6 +512,8 @@ extern const Name vt;
 extern const Name w;
 extern const Name weight;
 extern const Name permanence;
+extern const Name t_mean;
+extern const Name t_var;
 extern const Name th_perm;
 extern const Name Delta;
 extern const Name weight_per_lut_entry;

@@ -197,7 +197,7 @@ private:
     perm = perm - Delta_/2;
     return perm > 0 ? perm : 0.0;
   }
-
+  // not used 
   double
   depress_exp_( double perm, double kminus )
   {
@@ -205,7 +205,6 @@ private:
       - ( alpha_ * lambda_ * std::pow( perm / Pmax_, mu_minus_ ) * kminus );
     return norm_perm > 0.0 ? norm_perm * Pmax_ : 0.0;
   }
-
 
 
   // data members of each connection
@@ -220,6 +219,9 @@ private:
   double Pmax_;
   double Kplus_;
   double Delta_;
+
+  double t_mean_;
+  double t_var_;
 
   double th_perm_;
 
@@ -275,7 +277,7 @@ STDPConnectionHTM< targetidentifierT >::send( Event& e,
     // get_history() should make sure that
     // start->t_ > t_lastspike - dendritic_delay, i.e. minus_dt < 0
     assert( minus_dt < -1.0 * kernel().connection_manager.get_stdp_eps() );
-    if (minus_dt < -30. &&  minus_dt > -36. )
+    if (minus_dt < t_mean_ + t_var_ &&  minus_dt > t_mean_ - t_var_)
     {
         permanence_ = facilitate_( permanence_ );
     }
@@ -283,12 +285,10 @@ STDPConnectionHTM< targetidentifierT >::send( Event& e,
   }
 
   // depression due to new pre-synaptic spike
-  // printf("history %lf", history_empty_check());
   if ( target->history_empty_check() != 0 ) 
   {
     permanence_ = depress_( permanence_ );
   }
-  // permanence_ = depress_exp_( permanence_, target->get_K_value( t_spike - dendritic_delay ) );
 
   // update weight
   if (permanence_ > th_perm_)
@@ -308,8 +308,6 @@ STDPConnectionHTM< targetidentifierT >::send( Event& e,
   e.set_delay_steps( get_delay_steps() );
   e.set_rport( get_rport() );
   e();
-
-  Kplus_ = Kplus_ * std::exp( ( t_lastspike_ - t_spike ) / tau_plus_ ) + 1.0;
 
   t_lastspike_ = t_spike;
 }
@@ -331,6 +329,8 @@ STDPConnectionHTM< targetidentifierT >::STDPConnectionHTM()
   , Kplus_( 0.0 ) 
   , Delta_( 0.1 )
   , t_lastspike_( 0.0 )
+  , t_mean_( 30.0 )
+  , t_var_( 5.0 )
 {
 }
 
@@ -351,6 +351,8 @@ STDPConnectionHTM< targetidentifierT >::STDPConnectionHTM(
   , Kplus_( rhs.Kplus_ )
   , Delta_( rhs.Delta_ )  
   , t_lastspike_( rhs.t_lastspike_ )
+  , t_mean_( rhs.t_mean_ )
+  , t_var_( rhs.t_var_ )
 {
 }
 
@@ -369,6 +371,8 @@ STDPConnectionHTM< targetidentifierT >::get_status( DictionaryDatum& d ) const
   def< double >( d, names::mu_minus, mu_minus_ );
   def< double >( d, names::Wmax, Wmax_ ); 
   def< double >( d, names::Pmax, Pmax_ ); 
+  def< double >( d, names::t_mean, t_mean_ ); 
+  def< double >( d, names::t_var, t_var_ ); 
   def< double >( d, names::Delta, Delta_ );
   def< long >( d, names::size_of, sizeof( *this ) );
 }
@@ -390,6 +394,8 @@ STDPConnectionHTM< targetidentifierT >::set_status( const DictionaryDatum& d,
   updateValue< double >( d, names::Wmax, Wmax_ );
   updateValue< double >( d, names::Pmax, Pmax_ );
   updateValue< double >( d, names::Delta, Delta_ );
+  updateValue< double >( d, names::t_mean, t_mean_ );
+  updateValue< double >( d, names::t_var, t_var_ );
 
   // check if weight_ and Wmax_ has the same sign
   if ( not( ( ( weight_ >= 0 ) - ( weight_ < 0 ) )
