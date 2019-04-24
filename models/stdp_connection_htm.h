@@ -285,10 +285,10 @@ STDPConnectionHTM< targetidentifierT >::send( Event& e,
   }
 
   // depression due to new pre-synaptic spike
-  if ( target->history_empty_check() != 0 ) 
-  {
-    permanence_ = depress_( permanence_ );
-  }
+  // if ( target->history_empty_check() != 0 ) 
+  // {
+  //  permanence_ = depress_( permanence_ );
+  // }
 
   // update weight
   if (permanence_ > th_perm_)
