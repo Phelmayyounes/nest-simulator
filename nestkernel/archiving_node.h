@@ -131,7 +131,7 @@ public:
   /**
    * \fn double history_empty_check(long t)
    */
-  double history_empty_check();
+  bool history_empty_check();
 
   /**
    * \fn double get_K_value(long t)

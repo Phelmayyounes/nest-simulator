@@ -186,15 +186,15 @@ private:
   facilitate_( double perm )
   {
     // printf("# Facilitate #");
-    perm = perm + Delta_;
+    perm = perm + Delta_plus_;
     return perm < Pmax_ ? perm : Pmax_;
   }
 
   double
   depress_( double perm )
   {
-    // printf("# Depress #");
-    perm = perm - Delta_/2;
+    printf("# Depress #");
+    perm = perm - Delta_minus_;
     return perm > 0 ? perm : 0.0;
   }
   // not used 
@@ -218,8 +218,9 @@ private:
   double Wmax_;
   double Pmax_;
   double Kplus_;
-  double Delta_;
-
+  double Delta_plus_;
+  double Delta_minus_;
+  
   double t_mean_;
   double t_var_;
 
@@ -284,11 +285,12 @@ STDPConnectionHTM< targetidentifierT >::send( Event& e,
     
   }
 
-  // depression due to new pre-synaptic spike
-  // if ( target->history_empty_check() != 0 ) 
-  // {
-  //  permanence_ = depress_( permanence_ );
-  // }
+  // depression due to new pre-synaptic spike 
+  // printf(" \n ############## history_empty_check  %d ############", target->history_empty_check());
+  //if ( target->history_empty_check() == 0 ) 
+  //{
+  //    permanence_ = depress_( permanence_ );
+  //}
 
   // update weight
   if (permanence_ > th_perm_)
@@ -297,7 +299,7 @@ STDPConnectionHTM< targetidentifierT >::send( Event& e,
   }  
   else
   {
-    weight_ = 0.1;
+    weight_ = 0.01;
   }
       
   e.set_receiver( *target );
@@ -327,7 +329,8 @@ STDPConnectionHTM< targetidentifierT >::STDPConnectionHTM()
   , Pmax_( 4000.0 )  
   , th_perm_( 2000.0 )  
   , Kplus_( 0.0 ) 
-  , Delta_( 0.1 )
+  , Delta_plus_( 0.1 ) 
+  , Delta_minus_( 0.0 )
   , t_lastspike_( 0.0 )
   , t_mean_( 30.0 )
   , t_var_( 5.0 )
@@ -349,7 +352,8 @@ STDPConnectionHTM< targetidentifierT >::STDPConnectionHTM(
   , Wmax_( rhs.Wmax_ )
   , Pmax_( rhs.Pmax_ )  
   , Kplus_( rhs.Kplus_ )
-  , Delta_( rhs.Delta_ )  
+  , Delta_plus_( rhs.Delta_plus_ )   
+  , Delta_minus_( rhs.Delta_minus_ )  
   , t_lastspike_( rhs.t_lastspike_ )
   , t_mean_( rhs.t_mean_ )
   , t_var_( rhs.t_var_ )
@@ -373,7 +377,8 @@ STDPConnectionHTM< targetidentifierT >::get_status( DictionaryDatum& d ) const
   def< double >( d, names::Pmax, Pmax_ ); 
   def< double >( d, names::t_mean, t_mean_ ); 
   def< double >( d, names::t_var, t_var_ ); 
-  def< double >( d, names::Delta, Delta_ );
+  def< double >( d, names::Delta_plus, Delta_plus_ );
+  def< double >( d, names::Delta_minus, Delta_minus_ );
   def< long >( d, names::size_of, sizeof( *this ) );
 }
 
@@ -393,7 +398,8 @@ STDPConnectionHTM< targetidentifierT >::set_status( const DictionaryDatum& d,
   updateValue< double >( d, names::mu_minus, mu_minus_ );
   updateValue< double >( d, names::Wmax, Wmax_ );
   updateValue< double >( d, names::Pmax, Pmax_ );
-  updateValue< double >( d, names::Delta, Delta_ );
+  updateValue< double >( d, names::Delta_plus, Delta_plus_ );
+  updateValue< double >( d, names::Delta_minus, Delta_minus_ );
   updateValue< double >( d, names::t_mean, t_mean_ );
   updateValue< double >( d, names::t_var, t_var_ );
 

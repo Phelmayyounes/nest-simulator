@@ -425,7 +425,7 @@ Node::sends_secondary_event( DelayedRateConnectionEvent& )
 }
 
 
-double
+bool
 Node::history_empty_check()
 {
   throw UnexpectedEvent();

@@ -691,7 +691,7 @@ public:
   * check the spike history if empty
   * 
   */
-  virtual double history_empty_check();
+  virtual bool history_empty_check();
 
   /**
   * return the spike history for (t1,t2].

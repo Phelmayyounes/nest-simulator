@@ -96,7 +96,7 @@ Archiving_Node::register_stdp_connection( double t_first_read )
 }
 
 
-double
+bool
 nest::Archiving_Node::history_empty_check()
 {
   return history_.empty();
