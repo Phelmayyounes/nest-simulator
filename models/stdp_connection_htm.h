@@ -193,7 +193,7 @@ private:
   double
   depress_( double perm )
   {
-    printf("# Depress #");
+    //printf("# Depress #");
     perm = perm - Delta_minus_;
     return perm > 0 ? perm : 0.0;
   }
@@ -285,12 +285,8 @@ STDPConnectionHTM< targetidentifierT >::send( Event& e,
     
   }
 
-  // depression due to new pre-synaptic spike 
-  // printf(" \n ############## history_empty_check  %d ############", target->history_empty_check());
-  //if ( target->history_empty_check() == 0 ) 
-  //{
-  //    permanence_ = depress_( permanence_ );
-  //}
+  // depression due to new pre-synaptic spike
+  permanence_ = depress_( permanence_ );
 
   // update weight
   if (permanence_ > th_perm_)
