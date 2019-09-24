@@ -191,6 +191,14 @@ private:
   }
 
   double
+  facilitate_exp_( double perm, double kplus )
+  {
+    double norm_perm = ( perm / Pmax_ )
+    + ( lambda_ * std::pow( 1.0 - ( perm / Pmax_ ), mu_plus_ ) * kplus );
+    return norm_perm < 1.0 ? norm_perm * Pmax_ : Pmax_;
+  }
+
+  double
   depress_( double perm )
   {
     //printf("# Depress #");
@@ -205,7 +213,6 @@ private:
       - ( alpha_ * lambda_ * std::pow( perm / Pmax_, mu_minus_ ) * kminus );
     return norm_perm > 0.0 ? norm_perm * Pmax_ : 0.0;
   }
-
 
   // data members of each connection
   double weight_;
@@ -278,16 +285,12 @@ STDPConnectionHTM< targetidentifierT >::send( Event& e,
     // get_history() should make sure that
     // start->t_ > t_lastspike - dendritic_delay, i.e. minus_dt < 0
     assert( minus_dt < -1.0 * kernel().connection_manager.get_stdp_eps() );
-    if (minus_dt < t_mean_ + t_var_ &&  minus_dt > t_mean_ - t_var_)
-    {
-        permanence_ = facilitate_( permanence_ );
-    }
-    
+    permanence_ = facilitate_exp_( permanence_, Kplus_ * std::exp( minus_dt / tau_plus_ ) );
   }
 
   // depression due to new pre-synaptic spike
-  permanence_ = depress_( permanence_ );
-
+  permanence_ =  depress_exp_( permanence_, target->get_K_value( t_spike - dendritic_delay ) );
+  
   // update weight
   if (permanence_ > th_perm_)
   {
@@ -307,6 +310,8 @@ STDPConnectionHTM< targetidentifierT >::send( Event& e,
   e.set_rport( get_rport() );
   e();
 
+  Kplus_ = Kplus_ * std::exp( ( t_lastspike_ - t_spike ) / tau_plus_ ) + 1.0;
+
   t_lastspike_ = t_spike;
 }
 
@@ -316,7 +321,7 @@ STDPConnectionHTM< targetidentifierT >::STDPConnectionHTM()
   : ConnectionBase()
   , weight_( 0.1 )
   , permanence_(1.0)
-  , tau_plus_( 20.0 )
+  , tau_plus_( 80.0 )
   , lambda_( 0.01 )
   , alpha_( 1.0 )
   , mu_plus_( 1.0 )
