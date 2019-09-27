@@ -289,8 +289,9 @@ STDPConnectionHTM< targetidentifierT >::send( Event& e,
   }
 
   // depression due to new pre-synaptic spike
-  permanence_ =  depress_exp_( permanence_, target->get_K_value( t_spike - dendritic_delay ) );
-  
+  // permanence_ =  depress_exp_( permanence_, target->get_K_value( t_spike - dendritic_delay ) );
+  permanence_ = depress_( permanence_ );
+
   // update weight
   if (permanence_ > th_perm_)
   {
