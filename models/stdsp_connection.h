@@ -1,5 +1,5 @@
 /*
- *  stdp_connection.h
+ *  stdsp_connection.h
  *
  *  This file is part of NEST.
  *
@@ -38,6 +38,8 @@
 
 namespace nest
 {
+//TODO: change documentation of stdp to stdsp ("spike-timing dependent structural plasticity")
+//
 
 /** @BeginDocumentation
 Name: stdp_synapse - Synapse type for spike-timing dependent
@@ -97,7 +99,7 @@ SeeAlso: synapsedict, tsodyks_synapse, static_synapse
 // connections are templates of target identifier type (used for pointer /
 // target index addressing) derived from generic connection template
 template < typename targetidentifierT >
-class STDPConnectionHTM : public Connection< targetidentifierT >
+class STDSPConnection : public Connection< targetidentifierT >
 {
 
 public:
@@ -108,14 +110,14 @@ public:
    * Default Constructor.
    * Sets default values for all parameters. Needed by GenericConnectorModel.
    */
-  STDPConnectionHTM();
+  STDSPConnection();
 
 
   /**
    * Copy constructor.
    * Needs to be defined properly in order for GenericConnector to work.
    */
-  STDPConnectionHTM( const STDPConnectionHTM& );
+  STDSPConnection( const STDSPConnection& );
 
   // Explicitly declare all methods inherited from the dependent base
   // ConnectionBase. This avoids explicit name prefixes in all places these
@@ -245,7 +247,7 @@ private:
  */
 template < typename targetidentifierT >
 inline void
-STDPConnectionHTM< targetidentifierT >::send( Event& e,
+STDSPConnection< targetidentifierT >::send( Event& e,
   thread t,
   const CommonSynapseProperties& )
 {
@@ -285,7 +287,9 @@ STDPConnectionHTM< targetidentifierT >::send( Event& e,
     // get_history() should make sure that
     // start->t_ > t_lastspike - dendritic_delay, i.e. minus_dt < 0
     assert( minus_dt < -1.0 * kernel().connection_manager.get_stdp_eps() );
-    permanence_ = facilitate_exp_( permanence_, Kplus_ * std::exp( minus_dt / tau_plus_ ) );
+    if ( minus_dt < (-1.0 * dendritic_delay - 1.0) ){
+        permanence_ = facilitate_exp_( permanence_, Kplus_ * std::exp( minus_dt / tau_plus_ ) );
+    }
   }
 
   // depression due to new pre-synaptic spike
@@ -299,7 +303,7 @@ STDPConnectionHTM< targetidentifierT >::send( Event& e,
   }  
   else
   {
-    weight_ = 0.01;
+    weight_ = 0.001;
   }
       
   e.set_receiver( *target );
@@ -318,7 +322,7 @@ STDPConnectionHTM< targetidentifierT >::send( Event& e,
 
 
 template < typename targetidentifierT >
-STDPConnectionHTM< targetidentifierT >::STDPConnectionHTM()
+STDSPConnection< targetidentifierT >::STDSPConnection()
   : ConnectionBase()
   , weight_( 0.1 )
   , permanence_(1.0)
@@ -340,8 +344,8 @@ STDPConnectionHTM< targetidentifierT >::STDPConnectionHTM()
 }
 
 template < typename targetidentifierT >
-STDPConnectionHTM< targetidentifierT >::STDPConnectionHTM(
-  const STDPConnectionHTM< targetidentifierT >& rhs )
+STDSPConnection< targetidentifierT >::STDSPConnection(
+  const STDSPConnection< targetidentifierT >& rhs )
   : ConnectionBase( rhs )
   , weight_( rhs.weight_ )
   , permanence_(rhs.permanence_)  
@@ -364,7 +368,7 @@ STDPConnectionHTM< targetidentifierT >::STDPConnectionHTM(
 
 template < typename targetidentifierT >
 void
-STDPConnectionHTM< targetidentifierT >::get_status( DictionaryDatum& d ) const
+STDSPConnection< targetidentifierT >::get_status( DictionaryDatum& d ) const
 {
   ConnectionBase::get_status( d );
   def< double >( d, names::weight, weight_ ); 
@@ -386,7 +390,7 @@ STDPConnectionHTM< targetidentifierT >::get_status( DictionaryDatum& d ) const
 
 template < typename targetidentifierT >
 void
-STDPConnectionHTM< targetidentifierT >::set_status( const DictionaryDatum& d,
+STDSPConnection< targetidentifierT >::set_status( const DictionaryDatum& d,
   ConnectorModel& cm )
 {
   ConnectionBase::set_status( d, cm );
