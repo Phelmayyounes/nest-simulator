@@ -287,7 +287,7 @@ STDSPConnection< targetidentifierT >::send( Event& e,
     // get_history() should make sure that
     // start->t_ > t_lastspike - dendritic_delay, i.e. minus_dt < 0
     assert( minus_dt < -1.0 * kernel().connection_manager.get_stdp_eps() );
-    if ( minus_dt < (-1.0 * dendritic_delay - 1.0) ){
+    if ( minus_dt < (-1.0 * dendritic_delay - 2.0) ){
         permanence_ = facilitate_exp_( permanence_, Kplus_ * std::exp( minus_dt / tau_plus_ ) );
     }
   }
