@@ -520,7 +520,7 @@ ModelsModule::init( SLIInterpreter* )
 
 
   /** @BeginDocumentation
-     Name: stdp_synapse_htm
+     Name: stdsp_synapse
   */
 
   kernel()

@@ -222,7 +222,7 @@ private:
   double tau_minus_triplet_inv_;
 
   double last_spike_;
-
+  
   // spiking history needed by stdp synapses
   std::deque< histentry > history_;
 

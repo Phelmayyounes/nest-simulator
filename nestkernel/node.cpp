@@ -50,6 +50,7 @@ Node::Node()
   , frozen_( false )
   , buffers_initialized_( false )
   , node_uses_wfr_( false )
+  , syn_mature_counter_( 0 )  
 {
 }
 
@@ -65,6 +66,7 @@ Node::Node( const Node& n )
   // copy must always initialized its own buffers
   , buffers_initialized_( false )
   , node_uses_wfr_( n.node_uses_wfr_ )
+  , syn_mature_counter_( 0 ) 
 {
 }
 
@@ -470,5 +472,19 @@ Node::is_subnet() const
 {
   return false;
 }
+
+
+int 
+Node::get_syn_mature_counter()
+{
+    return syn_mature_counter_;
+}
+
+void
+Node::increase_syn_mature_counter()
+{
+    syn_mature_counter_++;
+}    
+
 
 } // namespace

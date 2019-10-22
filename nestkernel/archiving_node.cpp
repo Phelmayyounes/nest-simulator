@@ -91,8 +91,7 @@ Archiving_Node::register_stdp_connection( double t_first_read )
   {
     ( runner->access_counter_ )++;
   }
-
-  n_incoming_++;
+  
 }
 
 
@@ -467,3 +466,4 @@ nest::Archiving_Node::connect_synaptic_element( Name name, int n )
 }
 
 } // of namespace nest
+

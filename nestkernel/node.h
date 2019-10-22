@@ -866,6 +866,18 @@ public:
     return 0;
   }
 
+  /**
+  * get the number of mature synapses
+  */
+
+  int get_syn_mature_counter();
+  
+  /**
+   * increase the number of mature synapses 
+   */ 
+
+  void increase_syn_mature_counter();
+
 private:
   void set_lid_( index );      //!< Set local id, relative to the parent subnet
   void set_parent_( Subnet* ); //!< Set pointer to parent subnet.
@@ -925,6 +937,8 @@ private:
   index gid_;          //!< Global element id (within network).
   index lid_;          //!< Local element id (within parent).
   index subnet_index_; //!< Index of node in parent's node array
+
+  int syn_mature_counter_;
 
   /**
    * Local id of this node in the thread-local vector of nodes.
