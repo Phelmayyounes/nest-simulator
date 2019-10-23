@@ -91,7 +91,9 @@ Archiving_Node::register_stdp_connection( double t_first_read )
   {
     ( runner->access_counter_ )++;
   }
-  
+ 
+  n_incoming_++; 
+
 }
 
 
