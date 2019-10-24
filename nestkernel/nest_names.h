@@ -514,6 +514,7 @@ extern const Name weight;
 extern const Name permanence;
 extern const Name t_mean;
 extern const Name t_var;
+extern const Name th_syn_mature_counter;
 extern const Name th_perm;
 extern const Name Delta_plus;
 extern const Name Delta_minus;

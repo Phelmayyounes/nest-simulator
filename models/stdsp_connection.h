@@ -232,12 +232,11 @@ private:
   
   double t_mean_;
   double t_var_;
-
   double th_perm_;
-
   double t_lastspike_;
 
-  bool is_mature_=true; 
+  bool is_mature_ = true;
+  int th_syn_mature_counter_; 
 
 };
 
@@ -282,7 +281,7 @@ STDSPConnection< targetidentifierT >::send( Event& e,
   double minus_dt; 
   int counter = target->get_syn_mature_counter();
 
-  if(counter < 13) 
+  if( counter < th_syn_mature_counter_ ) 
   {
   while ( start != finish )
   {
@@ -302,16 +301,15 @@ STDSPConnection< targetidentifierT >::send( Event& e,
   // permanence_ =  depress_exp_( permanence_, target->get_K_value( t_spike - dendritic_delay ) );
     permanence_ = depress_( permanence_ );
   }
-  // printf("\n counter %d, mature %d", counter, is_mature_); 
-
-  if ((permanence_ > 15000) && is_mature_)
+ 
+  if ((permanence_ > th_perm_) && is_mature_)
   {
-     target->increase_syn_mature_counter();
-     is_mature_ = false;
+    target->increase_syn_mature_counter();
+    is_mature_ = false;
   }    
 
   // update weight
-  if (permanence_ > th_perm_)
+  if ( permanence_ > th_perm_ )
   {
     weight_ = Wmax_;
   }  
@@ -354,6 +352,7 @@ STDSPConnection< targetidentifierT >::STDSPConnection()
   , t_lastspike_( 0.0 )
   , t_mean_( 30.0 )
   , t_var_( 5.0 )
+  , th_syn_mature_counter_( 14 )  
 {
 }
 
@@ -377,6 +376,7 @@ STDSPConnection< targetidentifierT >::STDSPConnection(
   , t_lastspike_( rhs.t_lastspike_ )
   , t_mean_( rhs.t_mean_ )
   , t_var_( rhs.t_var_ )
+  , th_syn_mature_counter_( rhs.th_syn_mature_counter_ )
 {
 }
 
@@ -399,6 +399,7 @@ STDSPConnection< targetidentifierT >::get_status( DictionaryDatum& d ) const
   def< double >( d, names::t_var, t_var_ ); 
   def< double >( d, names::Delta_plus, Delta_plus_ );
   def< double >( d, names::Delta_minus, Delta_minus_ );
+  def< long >( d, names::th_syn_mature_counter, th_syn_mature_counter_ );
   def< long >( d, names::size_of, sizeof( *this ) );
 }
 
@@ -422,6 +423,7 @@ STDSPConnection< targetidentifierT >::set_status( const DictionaryDatum& d,
   updateValue< double >( d, names::Delta_minus, Delta_minus_ );
   updateValue< double >( d, names::t_mean, t_mean_ );
   updateValue< double >( d, names::t_var, t_var_ );
+  updateValue< long >( d, names::th_syn_mature_counter, th_syn_mature_counter_);
 
   // check if weight_ and Wmax_ has the same sign
   if ( not( ( ( weight_ >= 0 ) - ( weight_ < 0 ) )
