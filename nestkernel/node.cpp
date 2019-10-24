@@ -474,7 +474,7 @@ Node::is_subnet() const
 }
 
 
-int 
+double 
 Node::get_syn_mature_counter()
 {
     return syn_mature_counter_;

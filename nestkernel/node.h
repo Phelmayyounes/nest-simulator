@@ -870,7 +870,7 @@ public:
   * get the number of mature synapses
   */
 
-  int get_syn_mature_counter();
+  double get_syn_mature_counter();
   
   /**
    * increase the number of mature synapses 

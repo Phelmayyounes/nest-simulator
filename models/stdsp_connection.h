@@ -236,7 +236,7 @@ private:
   double t_lastspike_;
 
   bool is_mature_ = true;
-  int th_syn_mature_counter_; 
+  double th_syn_mature_counter_; 
 
 };
 
@@ -279,7 +279,7 @@ STDSPConnection< targetidentifierT >::send( Event& e,
     &finish );
   // facilitation due to post-synaptic spikes since last pre-synaptic spike
   double minus_dt; 
-  int counter = target->get_syn_mature_counter();
+  double counter = target->get_syn_mature_counter();
 
   if( counter < th_syn_mature_counter_ ) 
   {
@@ -399,7 +399,7 @@ STDSPConnection< targetidentifierT >::get_status( DictionaryDatum& d ) const
   def< double >( d, names::t_var, t_var_ ); 
   def< double >( d, names::Delta_plus, Delta_plus_ );
   def< double >( d, names::Delta_minus, Delta_minus_ );
-  def< long >( d, names::th_syn_mature_counter, th_syn_mature_counter_ );
+  def< double >( d, names::th_syn_mature_counter, th_syn_mature_counter_ );
   def< long >( d, names::size_of, sizeof( *this ) );
 }
 
@@ -423,7 +423,7 @@ STDSPConnection< targetidentifierT >::set_status( const DictionaryDatum& d,
   updateValue< double >( d, names::Delta_minus, Delta_minus_ );
   updateValue< double >( d, names::t_mean, t_mean_ );
   updateValue< double >( d, names::t_var, t_var_ );
-  updateValue< long >( d, names::th_syn_mature_counter, th_syn_mature_counter_);
+  updateValue< double >( d, names::th_syn_mature_counter, th_syn_mature_counter_);
 
   // check if weight_ and Wmax_ has the same sign
   if ( not( ( ( weight_ >= 0 ) - ( weight_ < 0 ) )
