@@ -161,6 +161,7 @@ Node::get_status_base()
     ( *dict )[ names::node_uses_wfr ] = node_uses_wfr();
     ( *dict )[ names::thread ] = get_thread();
     ( *dict )[ names::vp ] = get_vp();
+    ( *dict )[ names::syn_mature_counter ] = get_syn_mature_counter();
     if ( parent_ )
     {
       ( *dict )[ names::parent ] = parent_->get_gid();
