@@ -193,10 +193,10 @@ private:
   }
 
   double
-  facilitate_exp_( double perm, double kplus )
+  facilitate_exp_( double perm, double kplus, double gain)
   {
     double norm_perm = ( perm / Pmax_ )
-    + ( lambda_ * std::pow( 1.0 - ( perm / Pmax_ ), mu_plus_ ) * kplus );
+    + ( gain * std::pow( 1.0 - ( perm / Pmax_ ), mu_plus_ ) * kplus );
     return norm_perm < 1.0 ? norm_perm * Pmax_ : Pmax_;
   }
 
@@ -280,6 +280,8 @@ STDSPConnection< targetidentifierT >::send( Event& e,
   // facilitation due to post-synaptic spikes since last pre-synaptic spike
   double minus_dt; 
   double counter = target->get_syn_mature_counter();
+  float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+  double gain = r * lambda_; 
 
   if( counter < th_syn_mature_counter_ ) 
   {
@@ -293,7 +295,7 @@ STDSPConnection< targetidentifierT >::send( Event& e,
     // start->t_ > t_lastspike - dendritic_delay, i.e. minus_dt < 0
     assert( minus_dt < -1.0 * kernel().connection_manager.get_stdp_eps() );
     if ( minus_dt < (-1.0 * dendritic_delay - 2.0)){
-        permanence_ = facilitate_exp_( permanence_, Kplus_ * std::exp( minus_dt / tau_plus_ ) );
+        permanence_ = facilitate_exp_( permanence_, Kplus_ * std::exp( minus_dt / tau_plus_ ), gain);
     }
   }
    
