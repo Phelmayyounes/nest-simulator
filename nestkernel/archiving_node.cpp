@@ -53,6 +53,8 @@ nest::Archiving_Node::Archiving_Node()
   , Ca_minus_( 0.0 )
   , tau_Ca_( 10000.0 )
   , beta_Ca_( 0.001 )
+  , ltd_hist_len_( 0 )
+  , ltd_hist_current_( 0 )
   , synaptic_elements_map_()
 {
 }
@@ -71,6 +73,8 @@ nest::Archiving_Node::Archiving_Node( const Archiving_Node& n )
   , Ca_minus_( n.Ca_minus_ )
   , tau_Ca_( n.tau_Ca_ )
   , beta_Ca_( n.beta_Ca_ )
+  , ltd_hist_len_( n.ltd_hist_len_ )
+  , ltd_hist_current_( n.ltd_hist_current_ )
   , synaptic_elements_map_( n.synaptic_elements_map_ )
 {
 }
@@ -464,6 +468,46 @@ nest::Archiving_Node::connect_synaptic_element( Name name, int n )
   if ( se_it != synaptic_elements_map_.end() )
   {
     se_it->second.connect( n );
+  }
+}
+
+
+double
+nest::Archiving_Node::get_LTD_value( double t )
+{
+  std::vector< histentry_cl >::iterator runner;
+  if ( ltd_history_.empty() || t < 0.0 )
+  {
+    return 0.0;
+  }
+  else
+  {
+    runner = ltd_history_.begin();
+    while ( runner != ltd_history_.end() )
+    {
+      if ( fabs( t - runner->t_ ) < kernel().connection_manager.get_stdp_eps() )
+      {
+        return runner->dw_;
+      }
+      ( runner->access_counter_ )++;
+      ++runner;
+    }
+  }
+  // Return zero if there is no entry at time t
+return 0.0;
+}
+
+void
+nest::Archiving_Node::write_LTD_history( Time const& t_sp,
+  double u )
+{
+  const double t_ms = t_sp.get_ms();
+
+  if ( n_incoming_ )
+  { 
+    const double dw = u;
+    ltd_history_[ ltd_hist_current_ ] = histentry_cl( t_ms, dw, 0 );
+    ltd_hist_current_ = ( ltd_hist_current_ + 1 ) % ltd_hist_len_;
   }
 }
 

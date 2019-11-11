@@ -183,6 +183,12 @@ public:
    */
   double get_tau_Ca() const;
 
+  /**
+   * \fn double get_LTD_value(long t)
+   * Returns value in LTD history at time t
+   */
+  double get_LTD_value( double t );
+
 protected:
   /**
    * \fn void set_spiketime(Time const & t_sp, double offset)
@@ -202,7 +208,16 @@ protected:
    */
   void clear_history();
 
+  /**
+   * \fn void write_LTD_history( Time const& t_sp,
+   * double u )
+   */
+  void write_LTD_history(Time const& t_sp, double u);
+
 private:
+  std::vector< histentry_cl > ltd_history_;
+  std::deque< histentry_cl > ltp_history_;
+
   // number of incoming connections from stdp connectors.
   // needed to determine, if every incoming connection has
   // read the spikehistory for a given point in time
@@ -222,6 +237,10 @@ private:
   double tau_minus_triplet_inv_;
 
   double last_spike_;
+  
+  size_t ltd_hist_len_;
+
+  size_t ltd_hist_current_;
   
   // spiking history needed by stdp synapses
   std::deque< histentry > history_;

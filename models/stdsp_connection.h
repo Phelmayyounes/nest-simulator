@@ -47,8 +47,7 @@ plasticity.
 
 Description:
 
-stdp_synapse is a connector to create synapses with spike time
-dependent plasticity (as defined in [1]). Here the weight dependence
+stdp_synapse is a connector to create synapses with spike timedependent plasticity (as defined in [1]). Here the weight dependence
 exponent can be set separately for potentiation and depression.
 
 Examples:
@@ -216,6 +215,8 @@ private:
     return norm_perm > 0.0 ? norm_perm * Pmax_ : 0.0;
   }
 
+  //RecordingDevice device_;
+
   // data members of each connection
   double weight_;
   double permanence_;
@@ -277,6 +278,10 @@ STDSPConnection< targetidentifierT >::send( Event& e,
     t_spike - dendritic_delay,
     &start,
     &finish );
+  
+  //
+  double vm = target->get_LTD_value(t_spike - dendritic_delay);
+
   // facilitation due to post-synaptic spikes since last pre-synaptic spike
   double minus_dt; 
   double counter = target->get_syn_mature_counter();

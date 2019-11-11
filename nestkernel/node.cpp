@@ -440,6 +440,11 @@ Node::get_K_value( double )
   throw UnexpectedEvent();
 }
 
+double
+Node::get_LTD_value( double )
+{
+  throw UnexpectedEvent();
+}
 
 void
 Node::get_K_values( double, double&, double& )
