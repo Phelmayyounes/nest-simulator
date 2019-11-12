@@ -280,15 +280,24 @@ STDSPConnection< targetidentifierT >::send( Event& e,
     &finish );
   
   //
-  double vm = target->get_LTD_value(t_spike - dendritic_delay);
+  double vm = target->get_current_value(t_spike - dendritic_delay);
 
   // facilitation due to post-synaptic spikes since last pre-synaptic spike
   double minus_dt; 
   double counter = target->get_syn_mature_counter();
+  
   float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-  double gain = r * lambda_; 
+  // double gain = r * lambda_; 
+  double gain = lambda_; 
+  
+  // 
+  //if( (counter>=th_syn_mature_counter_) && (vm<200) )
+  //{
+    //printf("\n check %lf, vm %lf ", counter, vm);  
+   // th_syn_mature_counter_++;   
+  //}    
 
-  if( counter < th_syn_mature_counter_ ) 
+  if (counter < th_syn_mature_counter_) 
   {
   while ( start != finish )
   {

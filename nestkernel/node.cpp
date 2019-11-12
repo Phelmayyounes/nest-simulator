@@ -441,7 +441,7 @@ Node::get_K_value( double )
 }
 
 double
-Node::get_LTD_value( double )
+Node::get_current_value( double )
 {
   throw UnexpectedEvent();
 }

@@ -32,6 +32,7 @@
 #define ARCHIVING_NODE_H
 
 // C++ includes:
+#include <algorithm>
 #include <deque>
 
 // Includes from nestkernel:
@@ -187,7 +188,7 @@ public:
    * \fn double get_LTD_value(long t)
    * Returns value in LTD history at time t
    */
-  double get_LTD_value( double t );
+  double get_current_value( double t );
 
 protected:
   /**
@@ -212,12 +213,10 @@ protected:
    * \fn void write_LTD_history( Time const& t_sp,
    * double u )
    */
-  void write_LTD_history(Time const& t_sp, double u);
+  void write_current_history(Time const& t_sp, double u);
 
 private:
-  std::vector< histentry_cl > ltd_history_;
-  std::deque< histentry_cl > ltp_history_;
-
+  std::deque< histentry_cl > current_history_;
   // number of incoming connections from stdp connectors.
   // needed to determine, if every incoming connection has
   // read the spikehistory for a given point in time

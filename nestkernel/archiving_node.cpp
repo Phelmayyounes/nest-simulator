@@ -473,17 +473,17 @@ nest::Archiving_Node::connect_synaptic_element( Name name, int n )
 
 
 double
-nest::Archiving_Node::get_LTD_value( double t )
+nest::Archiving_Node::get_current_value( double t )
 {
-  std::vector< histentry_cl >::iterator runner;
-  if ( ltd_history_.empty() || t < 0.0 )
+  std::deque< histentry_cl >::iterator runner;
+  if ( current_history_.empty() || t < 0.0 )
   {
     return 0.0;
   }
   else
   {
-    runner = ltd_history_.begin();
-    while ( runner != ltd_history_.end() )
+    runner = current_history_.begin();
+    while ( runner != current_history_.end() )
     {
       if ( fabs( t - runner->t_ ) < kernel().connection_manager.get_stdp_eps() )
       {
@@ -498,16 +498,29 @@ return 0.0;
 }
 
 void
-nest::Archiving_Node::write_LTD_history( Time const& t_sp,
-  double u )
+nest::Archiving_Node::write_current_history( Time const& t_sp, double u )
 {
   const double t_ms = t_sp.get_ms();
-
+  
   if ( n_incoming_ )
-  { 
+  {
+    // prune all entries from history which are no longer needed
+    // except the penultimate one. we might still need it.
+    while ( current_history_.size() > 1 )
+    {
+      if ( current_history_.front().access_counter_ >= n_incoming_ )
+      {
+        current_history_.pop_front();
+      }
+      else
+      {
+        break;
+      }
+    }
+    // dw is not the change of the synaptic weight since the factor
+    // x_bar is not included (but later in the synapse)
     const double dw = u;
-    ltd_history_[ ltd_hist_current_ ] = histentry_cl( t_ms, dw, 0 );
-    ltd_hist_current_ = ( ltd_hist_current_ + 1 ) % ltd_hist_len_;
+    current_history_.push_back( histentry_cl( t_ms, dw, 0 ) );
   }
 }
 
