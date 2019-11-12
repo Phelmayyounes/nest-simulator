@@ -290,10 +290,12 @@ STDSPConnection< targetidentifierT >::send( Event& e,
   // double gain = r * lambda_; 
   double gain = lambda_; 
   
-  // 
+  //
+  printf("\n check %lf, vm %lf ", counter, vm);  
+
   if( (counter>=th_syn_mature_counter_) && (vm<200) )
   {
-    //printf("\n check %lf, vm %lf ", counter, vm);  
+      //printf("\n check %lf, vm %lf ", counter, vm);  
       th_syn_mature_counter_++;   
   }    
 

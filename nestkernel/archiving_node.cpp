@@ -53,8 +53,8 @@ nest::Archiving_Node::Archiving_Node()
   , Ca_minus_( 0.0 )
   , tau_Ca_( 10000.0 )
   , beta_Ca_( 0.001 )
-  , ltd_hist_len_( 0 )
-  , ltd_hist_current_( 0 )
+  , current_hist_len_( 0 )
+  , hist_rotate_( 0 )
   , synaptic_elements_map_()
 {
 }
@@ -73,11 +73,22 @@ nest::Archiving_Node::Archiving_Node( const Archiving_Node& n )
   , Ca_minus_( n.Ca_minus_ )
   , tau_Ca_( n.tau_Ca_ )
   , beta_Ca_( n.beta_Ca_ )
-  , ltd_hist_len_( n.ltd_hist_len_ )
-  , ltd_hist_current_( n.ltd_hist_current_ )
+  , current_hist_len_( n.current_hist_len_ )
+  , hist_rotate_( n.hist_rotate_ )
   , synaptic_elements_map_( n.synaptic_elements_map_ )
 {
 }
+
+void
+nest::Archiving_Node::init_current_buffers()
+{
+
+  // initialize the ltp-history
+  hist_rotate_ = 0;
+  current_hist_len_ = kernel().connection_manager.get_max_delay() + 1;
+  current_history_.resize( current_hist_len_, histentry_cl( 0.0, 0.0, 0 ) );
+}
+
 
 void
 Archiving_Node::register_stdp_connection( double t_first_read )
@@ -475,7 +486,7 @@ nest::Archiving_Node::connect_synaptic_element( Name name, int n )
 double
 nest::Archiving_Node::get_current_value( double t )
 {
-  std::deque< histentry_cl >::iterator runner;
+  std::vector< histentry_cl >::iterator runner;
   if ( current_history_.empty() || t < 0.0 )
   {
     return 0.0;
@@ -501,27 +512,14 @@ void
 nest::Archiving_Node::write_current_history( Time const& t_sp, double u )
 {
   const double t_ms = t_sp.get_ms();
-  
+
   if ( n_incoming_ )
   {
-    // prune all entries from history which are no longer needed
-    // except the penultimate one. we might still need it.
-    while ( current_history_.size() > 1 )
-    {
-      if ( current_history_.front().access_counter_ >= n_incoming_ )
-      {
-        current_history_.pop_front();
-      }
-      else
-      {
-        break;
-      }
-    }
-    // dw is not the change of the synaptic weight since the factor
-    // x_bar is not included (but later in the synapse)
     const double dw = u;
-    current_history_.push_back( histentry_cl( t_ms, dw, 0 ) );
+    current_history_[ hist_rotate_ ] = histentry_cl( t_ms, dw, 0 );
+    hist_rotate_ = ( hist_rotate_ + 1 ) % current_hist_len_;
   }
+
 }
 
 } // of namespace nest

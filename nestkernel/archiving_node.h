@@ -215,9 +215,15 @@ protected:
    */
   void write_current_history(Time const& t_sp, double u);
 
+  /**
+   *
+   */
+  void init_current_buffers();
+
 private:
-  std::deque< histentry_cl > current_history_;
-  // number of incoming connections from stdp connectors.
+  std::vector< histentry_cl > current_history_;
+ 
+   // number of incoming connections from stdp connectors.
   // needed to determine, if every incoming connection has
   // read the spikehistory for a given point in time
   size_t n_incoming_;
@@ -237,9 +243,9 @@ private:
 
   double last_spike_;
   
-  size_t ltd_hist_len_;
+  size_t current_hist_len_;
 
-  size_t ltd_hist_current_;
+  size_t hist_rotate_;
   
   // spiking history needed by stdp synapses
   std::deque< histentry > history_;
