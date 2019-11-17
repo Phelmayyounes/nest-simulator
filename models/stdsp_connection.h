@@ -144,7 +144,6 @@ public:
    */
   void send( Event& e, thread t, const CommonSynapseProperties& cp );
 
-
   class ConnTestDummyNode : public ConnTestDummyNodeBase
   {
   public:
@@ -237,8 +236,6 @@ private:
   double t_lastspike_;
 
   bool is_mature_ = true;
-  double th_syn_mature_counter_; 
-
 };
 
 
@@ -280,7 +277,8 @@ STDSPConnection< targetidentifierT >::send( Event& e,
     &finish );
   
   //
-  double vm = target->get_current_value(t_spike - dendritic_delay);
+  //double cm = target->get_current_value(t_spike - dendritic_delay);
+  double th_syn_mature_counter = target->get_th_syn_mature_counter();
 
   // facilitation due to post-synaptic spikes since last pre-synaptic spike
   double minus_dt; 
@@ -291,22 +289,38 @@ STDSPConnection< targetidentifierT >::send( Event& e,
   double gain = lambda_; 
   
   //
-  printf("\n check %lf, vm %lf ", counter, vm);  
+  //if(cm>200)
+  //{
+  //  printf("\n check %lf, vm %lf ", counter, cm);  
+ // }
 
-  if( (counter>=th_syn_mature_counter_) && (vm<200) )
-  {
-      //printf("\n check %lf, vm %lf ", counter, vm);  
-      th_syn_mature_counter_++;   
-  }    
+  //if( (counter>=th_syn_mature_counter_) && (cm<200) )
+  //{
+  //  printf("\n check %lf, vm %lf ", counter, cm);  
+  //  th_syn_mature_counter_++;   
+  //}    
 
-  if (counter < th_syn_mature_counter_) 
+  //double vm;
+  //start_prev = start;
+  //while ( start_prev != finish )
+  //{
+  //  vm = target->get_current_value( start->t_);
+  //  if( (counter>=th_syn_mature_counter_) && (vm<200) )
+  //  {
+  //    printf("\n check %lf, vm %lf ", counter, vm);  
+  //    th_syn_mature_counter_++;   
+  //  }    
+  //  ++start_prev;
+  //}
+
+  if (counter < th_syn_mature_counter) 
   {
   while ( start != finish )
   {
     minus_dt = t_lastspike_ - ( start->t_ + dendritic_delay ); 
     // printf("\n last spike %lf, start %lf, minus_dt %f, t %f", t_lastspike_ , start->t_, minus_dt, t_spike);
     ++start;
-      
+
     // get_history() should make sure that
     // start->t_ > t_lastspike - dendritic_delay, i.e. minus_dt < 0
     assert( minus_dt < -1.0 * kernel().connection_manager.get_stdp_eps() );
@@ -370,7 +384,6 @@ STDSPConnection< targetidentifierT >::STDSPConnection()
   , t_lastspike_( 0.0 )
   , t_mean_( 30.0 )
   , t_var_( 5.0 )
-  , th_syn_mature_counter_( 14 )  
 {
 }
 
@@ -394,7 +407,6 @@ STDSPConnection< targetidentifierT >::STDSPConnection(
   , t_lastspike_( rhs.t_lastspike_ )
   , t_mean_( rhs.t_mean_ )
   , t_var_( rhs.t_var_ )
-  , th_syn_mature_counter_( rhs.th_syn_mature_counter_ )
 {
 }
 
@@ -417,7 +429,6 @@ STDSPConnection< targetidentifierT >::get_status( DictionaryDatum& d ) const
   def< double >( d, names::t_var, t_var_ ); 
   def< double >( d, names::Delta_plus, Delta_plus_ );
   def< double >( d, names::Delta_minus, Delta_minus_ );
-  def< double >( d, names::th_syn_mature_counter, th_syn_mature_counter_ );
   def< long >( d, names::size_of, sizeof( *this ) );
 }
 
@@ -441,7 +452,6 @@ STDSPConnection< targetidentifierT >::set_status( const DictionaryDatum& d,
   updateValue< double >( d, names::Delta_minus, Delta_minus_ );
   updateValue< double >( d, names::t_mean, t_mean_ );
   updateValue< double >( d, names::t_var, t_var_ );
-  updateValue< double >( d, names::th_syn_mature_counter, th_syn_mature_counter_);
 
   // check if weight_ and Wmax_ has the same sign
   if ( not( ( ( weight_ >= 0 ) - ( weight_ < 0 ) )

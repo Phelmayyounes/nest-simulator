@@ -51,6 +51,7 @@ Node::Node()
   , buffers_initialized_( false )
   , node_uses_wfr_( false )
   , syn_mature_counter_( 0 )  
+  , th_syn_mature_counter_( 7 ) 
 {
 }
 
@@ -66,7 +67,9 @@ Node::Node( const Node& n )
   // copy must always initialized its own buffers
   , buffers_initialized_( false )
   , node_uses_wfr_( n.node_uses_wfr_ )
-  , syn_mature_counter_( 0 ) 
+  , syn_mature_counter_( 0 )
+  , th_syn_mature_counter_( 7 )  
+    
 {
 }
 
@@ -483,13 +486,26 @@ Node::is_subnet() const
 double 
 Node::get_syn_mature_counter()
 {
-    return syn_mature_counter_;
+  return syn_mature_counter_;
 }
+
+
+double 
+Node::get_th_syn_mature_counter()
+{
+  return th_syn_mature_counter_; 
+}    
 
 void
 Node::increase_syn_mature_counter()
 {
     syn_mature_counter_++;
+}    
+
+void
+Node::increase_th_syn_mature_counter()
+{
+  th_syn_mature_counter_++;
 }    
 
 

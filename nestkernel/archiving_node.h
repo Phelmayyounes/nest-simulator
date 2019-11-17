@@ -60,6 +60,8 @@ class Archiving_Node : public Node
   using Node::get_synaptic_elements;
 
 public:
+  double current_at_spike_; 
+  
   /**
    * \fn Archiving_Node()
    * Constructor.

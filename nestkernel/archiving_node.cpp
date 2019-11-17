@@ -55,6 +55,7 @@ nest::Archiving_Node::Archiving_Node()
   , beta_Ca_( 0.001 )
   , current_hist_len_( 0 )
   , hist_rotate_( 0 )
+  , current_at_spike_( 0 )
   , synaptic_elements_map_()
 {
 }
@@ -75,6 +76,7 @@ nest::Archiving_Node::Archiving_Node( const Archiving_Node& n )
   , beta_Ca_( n.beta_Ca_ )
   , current_hist_len_( n.current_hist_len_ )
   , hist_rotate_( n.hist_rotate_ )
+  , current_at_spike_( n.current_at_spike_ )
   , synaptic_elements_map_( n.synaptic_elements_map_ )
 {
 }
@@ -235,6 +237,7 @@ nest::Archiving_Node::set_spiketime( Time const& t_sp, double offset )
   {
     last_spike_ = t_sp_ms;
   }
+
 }
 
 void
@@ -489,7 +492,7 @@ nest::Archiving_Node::get_current_value( double t )
   std::vector< histentry_cl >::iterator runner;
   if ( current_history_.empty() || t < 0.0 )
   {
-    return 0.0;
+    return -2;
   }
   else
   {
@@ -505,7 +508,7 @@ nest::Archiving_Node::get_current_value( double t )
     }
   }
   // Return zero if there is no entry at time t
-return 0.0;
+return -1;
 }
 
 void

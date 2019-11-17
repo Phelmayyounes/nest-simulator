@@ -880,6 +880,14 @@ public:
 
   void increase_syn_mature_counter();
 
+  /**
+  * get the threshold of the number of mature synapses 
+  */
+
+  double get_th_syn_mature_counter();
+
+  void increase_th_syn_mature_counter(); 
+
 private:
   void set_lid_( index );      //!< Set local id, relative to the parent subnet
   void set_parent_( Subnet* ); //!< Set pointer to parent subnet.
@@ -941,6 +949,7 @@ private:
   index subnet_index_; //!< Index of node in parent's node array
 
   int syn_mature_counter_;
+  double th_syn_mature_counter_;  
 
   /**
    * Local id of this node in the thread-local vector of nodes.
