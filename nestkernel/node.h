@@ -886,7 +886,7 @@ public:
 
   double get_th_syn_mature_counter();
 
-  void increase_th_syn_mature_counter(); 
+  void increase_th_syn_mature_counter(double); 
 
 private:
   void set_lid_( index );      //!< Set local id, relative to the parent subnet

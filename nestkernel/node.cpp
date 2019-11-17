@@ -503,9 +503,9 @@ Node::increase_syn_mature_counter()
 }    
 
 void
-Node::increase_th_syn_mature_counter()
+Node::increase_th_syn_mature_counter(double increment)
 {
-  th_syn_mature_counter_++;
+  th_syn_mature_counter_ = th_syn_mature_counter_ + increment;
 }    
 
 
