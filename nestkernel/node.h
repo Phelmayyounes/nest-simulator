@@ -888,6 +888,8 @@ public:
 
   void increase_th_syn_mature_counter(double); 
 
+  virtual bool get_reach_max_activity();
+
 private:
   void set_lid_( index );      //!< Set local id, relative to the parent subnet
   void set_parent_( Subnet* ); //!< Set pointer to parent subnet.

@@ -51,7 +51,7 @@ Node::Node()
   , buffers_initialized_( false )
   , node_uses_wfr_( false )
   , syn_mature_counter_( 0 )  
-  , th_syn_mature_counter_( 7 ) 
+  , th_syn_mature_counter_( 3 ) 
 {
 }
 
@@ -68,7 +68,7 @@ Node::Node( const Node& n )
   , buffers_initialized_( false )
   , node_uses_wfr_( n.node_uses_wfr_ )
   , syn_mature_counter_( 0 )
-  , th_syn_mature_counter_( 7 )  
+  , th_syn_mature_counter_( 3 )  
     
 {
 }
@@ -508,5 +508,11 @@ Node::increase_th_syn_mature_counter(double increment)
   th_syn_mature_counter_ = th_syn_mature_counter_ + increment;
 }    
 
+
+bool  
+Node::get_reach_max_activity()
+{
+  throw UnexpectedEvent();
+}
 
 } // namespace

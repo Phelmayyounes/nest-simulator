@@ -258,6 +258,8 @@ STDSPConnection< targetidentifierT >::send( Event& e,
   // target
   Node* target = get_target( t );
   double dendritic_delay = get_delay();
+  double v = target->get_reach_max_activity();
+  printf("\n vm %d ", v);
 
   // get spike history in relevant range (t1, t2] from post-synaptic neuron
   std::deque< histentry >::iterator start;

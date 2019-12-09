@@ -227,6 +227,8 @@ STDPConnection< targetidentifierT >::send( Event& e,
   Node* target = get_target( t );
   double dendritic_delay = get_delay();
 
+  bool reach_max_activity = target->get_reach_max_activity();
+
   // get spike history in relevant range (t1, t2] from post-synaptic neuron
   std::deque< histentry >::iterator start;
   std::deque< histentry >::iterator finish;
@@ -245,6 +247,7 @@ STDPConnection< targetidentifierT >::send( Event& e,
     &finish );
   // facilitation due to post-synaptic spikes since last pre-synaptic spike
   double minus_dt;
+  if(reach_max_activity == false){
   while ( start != finish )
   {
     minus_dt = t_lastspike_ - ( start->t_ + dendritic_delay );
@@ -252,12 +255,15 @@ STDPConnection< targetidentifierT >::send( Event& e,
     // get_history() should make sure that
     // start->t_ > t_lastspike - dendritic_delay, i.e. minus_dt < 0
     assert( minus_dt < -1.0 * kernel().connection_manager.get_stdp_eps() );
-    weight_ = facilitate_( weight_, Kplus_ * std::exp( minus_dt / tau_plus_ ) );
+    if (minus_dt < (-1.0 * dendritic_delay - 2.0)){
+      weight_ = facilitate_( weight_, Kplus_ * std::exp( minus_dt / tau_plus_ ) );
+    }
   }
 
   // depression due to new pre-synaptic spike
   weight_ =
     depress_( weight_, target->get_K_value( t_spike - dendritic_delay ) );
+  }
 
   e.set_receiver( *target );
   e.set_weight( weight_ );
