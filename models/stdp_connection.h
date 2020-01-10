@@ -168,6 +168,8 @@ public:
     ConnectionBase::check_connection_( dummy_target, s, t, receptor_type );
 
     t.register_stdp_connection( t_lastspike_ - get_delay() );
+  
+    t.register_stdp_weights( weight_ ); 
   }
 
   void
@@ -186,11 +188,19 @@ private:
   }
 
   double
-  depress_( double w, double kminus )
+  depress_exp_( double w, double kminus )
   {
       double norm_w = ( w / Wmax_ )
       - ( alpha_ * lambda_ * std::pow( w / Wmax_, mu_minus_ ) * kminus );
     return norm_w > 0.0 ? norm_w * Wmax_ : 0.0;
+  }
+
+  double
+  depress_( double w )
+  {
+    //printf("# Depress #");
+    w = w - alpha_ * lambda_;
+    return w > 0 ? w : 0.0;
   }
 
   // data members of each connection
@@ -228,6 +238,10 @@ STDPConnection< targetidentifierT >::send( Event& e,
   double dendritic_delay = get_delay();
 
   bool reach_max_activity = target->get_reach_max_activity();
+ 
+  double total_weight = target->get_total_weight();
+
+  //printf("\n total_weight %f", total_weight);
 
   // get spike history in relevant range (t1, t2] from post-synaptic neuron
   std::deque< histentry >::iterator start;
@@ -261,8 +275,11 @@ STDPConnection< targetidentifierT >::send( Event& e,
   }
 
   // depression due to new pre-synaptic spike
-  weight_ =
-    depress_( weight_, target->get_K_value( t_spike - dendritic_delay ) );
+  //weight_ =
+  //  depress_( weight_, target->get_K_value( t_spike - dendritic_delay ) );
+  
+  weight_ = depress_(weight_);
+  
   }
 
   e.set_receiver( *target );

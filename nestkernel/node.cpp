@@ -240,6 +240,13 @@ Node::register_stdp_connection( double )
   throw IllegalConnection();
 }
 
+
+void
+Node::register_stdp_weights( double )
+{
+  throw IllegalConnection();
+}
+
 /**
  * Default implementation of event handlers just throws
  * an UnexpectedEvent exception.
@@ -439,6 +446,12 @@ Node::history_empty_check()
 
 double
 Node::get_K_value( double )
+{
+  throw UnexpectedEvent();
+}
+
+double
+Node::get_total_weight()
 {
   throw UnexpectedEvent();
 }

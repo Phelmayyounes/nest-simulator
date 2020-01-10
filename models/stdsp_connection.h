@@ -259,7 +259,7 @@ STDSPConnection< targetidentifierT >::send( Event& e,
   Node* target = get_target( t );
   double dendritic_delay = get_delay();
   double v = target->get_reach_max_activity();
-  printf("\n vm %d ", v);
+  //printf("\n vm %d ", v);
 
   // get spike history in relevant range (t1, t2] from post-synaptic neuron
   std::deque< histentry >::iterator start;
@@ -317,23 +317,23 @@ STDSPConnection< targetidentifierT >::send( Event& e,
 
   if (counter < th_syn_mature_counter) 
   {
-  while ( start != finish )
-  {
-    minus_dt = t_lastspike_ - ( start->t_ + dendritic_delay ); 
-    // printf("\n last spike %lf, start %lf, minus_dt %f, t %f", t_lastspike_ , start->t_, minus_dt, t_spike);
-    ++start;
+      while ( start != finish )
+      {
+          minus_dt = t_lastspike_ - ( start->t_ + dendritic_delay ); 
+          // printf("\n last spike %lf, start %lf, minus_dt %f, t %f", t_lastspike_ , start->t_, minus_dt, t_spike);
+          ++start;
 
-    // get_history() should make sure that
-    // start->t_ > t_lastspike - dendritic_delay, i.e. minus_dt < 0
-    assert( minus_dt < -1.0 * kernel().connection_manager.get_stdp_eps() );
-    if ( minus_dt < (-1.0 * dendritic_delay - 2.0)){
-        permanence_ = facilitate_exp_( permanence_, Kplus_ * std::exp( minus_dt / tau_plus_ ), gain);
-    }
-  }
+          // get_history() should make sure that
+          // start->t_ > t_lastspike - dendritic_delay, i.e. minus_dt < 0
+          assert( minus_dt < -1.0 * kernel().connection_manager.get_stdp_eps() );
+          if ( minus_dt < (-1.0 * dendritic_delay - 2.0)){
+              permanence_ = facilitate_exp_( permanence_, Kplus_ * std::exp( minus_dt / tau_plus_ ), gain);
+          }
+      }
    
-  // depression due to new pre-synaptic spike
-  // permanence_ =  depress_exp_( permanence_, target->get_K_value( t_spike - dendritic_delay ) );
-    permanence_ = depress_( permanence_ );
+      // depression due to new pre-synaptic spike
+      // permanence_ =  depress_exp_( permanence_, target->get_K_value( t_spike - dendritic_delay ) );
+      permanence_ = depress_( permanence_ );
   }
  
   if ((permanence_ > th_perm_) && is_mature_)

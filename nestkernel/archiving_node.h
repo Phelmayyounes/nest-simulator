@@ -141,6 +141,8 @@ public:
    * return the Kminus value at t (in ms).
    */
   double get_K_value( double t );
+  
+  double get_total_weight( );
 
   /**
    * write the Kminus and triplet_Kminus values at t (in ms) to
@@ -176,6 +178,8 @@ public:
    * with t > t_first_read.
    */
   void register_stdp_connection( double t_first_read );
+  
+  void register_stdp_weights( double weight );
 
   void get_status( DictionaryDatum& d ) const;
   void set_status( const DictionaryDatum& d );
@@ -229,6 +233,8 @@ private:
   // needed to determine, if every incoming connection has
   // read the spikehistory for a given point in time
   size_t n_incoming_;
+
+  double total_weights_; 
 
   // sum exp(-(t-ti)/tau_minus)
   double Kminus_;

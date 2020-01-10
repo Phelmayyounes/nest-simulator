@@ -479,6 +479,8 @@ public:
    *
    */
   virtual void register_stdp_connection( double );
+  
+  virtual void register_stdp_weights( double );
 
   /**
    * Handle incoming spike events.
@@ -679,6 +681,8 @@ public:
    * @throws UnexpectedEvent
    */
   virtual double get_K_value( double t );
+  
+  virtual double get_total_weight();
 
   virtual double get_current_value( double t );
 

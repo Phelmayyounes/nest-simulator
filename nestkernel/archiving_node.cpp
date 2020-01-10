@@ -42,6 +42,7 @@ namespace nest
 
 nest::Archiving_Node::Archiving_Node()
   : n_incoming_( 0 )
+  , total_weights_( 0 )
   , Kminus_( 0.0 )
   , triplet_Kminus_( 0.0 )
   , tau_minus_( 20.0 )
@@ -63,6 +64,7 @@ nest::Archiving_Node::Archiving_Node()
 nest::Archiving_Node::Archiving_Node( const Archiving_Node& n )
   : Node( n )
   , n_incoming_( n.n_incoming_ )
+  , total_weights_( n.total_weights_ )
   , Kminus_( n.Kminus_ )
   , triplet_Kminus_( n.triplet_Kminus_ )
   , tau_minus_( n.tau_minus_ )
@@ -113,6 +115,13 @@ Archiving_Node::register_stdp_connection( double t_first_read )
 
 }
 
+void
+Archiving_Node::register_stdp_weights( double weight )
+{
+
+  total_weights_ += weight; 
+
+}
 
 bool
 nest::Archiving_Node::history_empty_check()
@@ -138,6 +147,13 @@ nest::Archiving_Node::get_K_value( double t )
     i--;
   }
   return 0;
+}
+
+
+double
+nest::Archiving_Node::get_total_weight()
+{
+    return total_weights_;  
 }
 
 void
