@@ -258,8 +258,8 @@ STDSPConnection< targetidentifierT >::send( Event& e,
   // target
   Node* target = get_target( t );
   double dendritic_delay = get_delay();
-  double v = target->get_reach_max_activity();
-  //printf("\n vm %d ", v);
+  double reach_max_level = target->get_reach_max_activity();
+  double th_syn_mature_counter = target->get_th_syn_mature_counter();
 
   // get spike history in relevant range (t1, t2] from post-synaptic neuron
   std::deque< histentry >::iterator start;
@@ -278,10 +278,6 @@ STDSPConnection< targetidentifierT >::send( Event& e,
     &start,
     &finish );
   
-  //
-  //double cm = target->get_current_value(t_spike - dendritic_delay);
-  double th_syn_mature_counter = target->get_th_syn_mature_counter();
-
   // facilitation due to post-synaptic spikes since last pre-synaptic spike
   double minus_dt; 
   double counter = target->get_syn_mature_counter();
@@ -290,32 +286,7 @@ STDSPConnection< targetidentifierT >::send( Event& e,
   // double gain = r * lambda_; 
   double gain = lambda_; 
   
-  //
-  //if(cm>200)
-  //{
-  //  printf("\n check %lf, vm %lf ", counter, cm);  
- // }
-
-  //if( (counter>=th_syn_mature_counter_) && (cm<200) )
-  //{
-  //  printf("\n check %lf, vm %lf ", counter, cm);  
-  //  th_syn_mature_counter_++;   
-  //}    
-
-  //double vm;
-  //start_prev = start;
-  //while ( start_prev != finish )
-  //{
-  //  vm = target->get_current_value( start->t_);
-  //  if( (counter>=th_syn_mature_counter_) && (vm<200) )
-  //  {
-  //    printf("\n check %lf, vm %lf ", counter, vm);  
-  //    th_syn_mature_counter_++;   
-  //  }    
-  //  ++start_prev;
-  //}
-
-  if (counter < th_syn_mature_counter) 
+  if (reach_max_level == false) 
   {
       while ( start != finish )
       {

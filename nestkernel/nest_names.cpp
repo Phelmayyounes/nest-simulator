@@ -497,6 +497,7 @@ const Name t_mean( "t_mean" );
 const Name t_var( "t_var" );
 const Name th_syn_mature_counter( "th_syn_mature_counter" );
 const Name syn_mature_counter( "syn_mature_counter" );
+const Name total_weights( "total_weights" );
 const Name th_perm( "th_perm" );
 const Name Delta_plus("Delta_plus");
 const Name Delta_minus("Delta_minus");

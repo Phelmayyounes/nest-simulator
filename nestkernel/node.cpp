@@ -51,6 +51,7 @@ Node::Node()
   , buffers_initialized_( false )
   , node_uses_wfr_( false )
   , syn_mature_counter_( 0 )  
+  , total_weights_( 0 )
   , th_syn_mature_counter_( 3 ) 
 {
 }
@@ -68,6 +69,7 @@ Node::Node( const Node& n )
   , buffers_initialized_( false )
   , node_uses_wfr_( n.node_uses_wfr_ )
   , syn_mature_counter_( 0 )
+  , total_weights_( 0 )
   , th_syn_mature_counter_( 3 )  
     
 {
@@ -164,6 +166,7 @@ Node::get_status_base()
     ( *dict )[ names::node_uses_wfr ] = node_uses_wfr();
     ( *dict )[ names::thread ] = get_thread();
     ( *dict )[ names::vp ] = get_vp();
+    ( *dict )[ names::total_weights ] = get_total_weight();
     ( *dict )[ names::syn_mature_counter ] = get_syn_mature_counter();
     if ( parent_ )
     {
@@ -236,13 +239,6 @@ Node::send_test_event( Node&, rport, synindex, bool )
  */
 void
 Node::register_stdp_connection( double )
-{
-  throw IllegalConnection();
-}
-
-
-void
-Node::register_stdp_weights( double )
 {
   throw IllegalConnection();
 }
@@ -451,12 +447,6 @@ Node::get_K_value( double )
 }
 
 double
-Node::get_total_weight()
-{
-  throw UnexpectedEvent();
-}
-
-double
 Node::get_current_value( double )
 {
   throw UnexpectedEvent();
@@ -506,21 +496,33 @@ Node::get_syn_mature_counter()
 double 
 Node::get_th_syn_mature_counter()
 {
-  return th_syn_mature_counter_; 
+  throw UnexpectedEvent();
 }    
 
 void
 Node::increase_syn_mature_counter()
 {
-    syn_mature_counter_++;
+  syn_mature_counter_++;
 }    
 
 void
-Node::increase_th_syn_mature_counter(double increment)
+Node::register_stdp_weights( double weight )
 {
-  th_syn_mature_counter_ = th_syn_mature_counter_ + increment;
-}    
+  total_weights_ += weight; 
+}
 
+void
+Node::update_stdp_weights(double dw)
+{
+  total_weights_ += dw; 
+}
+
+
+double
+Node::get_total_weight()
+{
+  return total_weights_;  
+}
 
 bool  
 Node::get_reach_max_activity()

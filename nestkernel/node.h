@@ -478,9 +478,12 @@ public:
    * @throws IllegalConnection
    *
    */
-  virtual void register_stdp_connection( double );
+ 
+  virtual void register_stdp_connection( double t_first_read );
   
-  virtual void register_stdp_weights( double );
+  void register_stdp_weights( double weight );
+  
+  void update_stdp_weights( double dw );
 
   /**
    * Handle incoming spike events.
@@ -682,8 +685,6 @@ public:
    */
   virtual double get_K_value( double t );
   
-  virtual double get_total_weight();
-
   virtual double get_current_value( double t );
 
   /**
@@ -877,7 +878,9 @@ public:
   */
 
   double get_syn_mature_counter();
-  
+ 
+  double get_total_weight();
+
   /**
    * increase the number of mature synapses 
    */ 
@@ -888,10 +891,7 @@ public:
   * get the threshold of the number of mature synapses 
   */
 
-  double get_th_syn_mature_counter();
-
-  void increase_th_syn_mature_counter(double); 
-
+  virtual double get_th_syn_mature_counter();
   virtual bool get_reach_max_activity();
 
 private:
@@ -956,6 +956,7 @@ private:
 
   int syn_mature_counter_;
   double th_syn_mature_counter_;  
+  double total_weights_; 
 
   /**
    * Local id of this node in the thread-local vector of nodes.
