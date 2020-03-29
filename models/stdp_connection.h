@@ -180,12 +180,13 @@ public:
 
 private:
   double
-  facilitate_( double w_old, double kplus )
+  facilitate_( double w_old, double kplus, double *deltaf)
   {
     double norm_w = ( w_old / Wmax_ )
       + ( lambda_ * std::pow( 1.0 - ( w_old / Wmax_ ), mu_plus_ ) * kplus );
     
     double w_new = norm_w < 1.0 ? norm_w * Wmax_ : Wmax_;
+    *deltaf = w_new - w_old;
 
     return w_new;
   }
@@ -215,8 +216,13 @@ private:
   double mu_minus_;
   double Wmax_;
   double Kplus_;
+  double I_t = 100;
+  double q = 0.01;
+  double delay = 2;
+
 
   double t_lastspike_;
+  bool is_active_ = false;
 };
 
 
@@ -240,12 +246,11 @@ STDPConnection< targetidentifierT >::send( Event& e,
   Node* target = get_target( t );
   double dendritic_delay = get_delay();
 
-  bool reach_max_activity = target->get_reach_max_activity();
-
-  double total_weight = target->get_total_weight();
+  //bool reach_max_activity = target->get_reach_max_activity();
+  double I_c = target->get_th_syn_mature_counter();
+  //double total_weight = target->get_total_weight();
+  //
   double prev_weight_ = weight_;
-
-  //printf("\n total_weight %f", total_weight);
 
   // get spike history in relevant range (t1, t2] from post-synaptic neuron
   std::deque< histentry >::iterator start;
@@ -265,29 +270,33 @@ STDPConnection< targetidentifierT >::send( Event& e,
     &finish );
   // facilitation due to post-synaptic spikes since last pre-synaptic spike
   double minus_dt;
+  double deltaf;
 
-  if(reach_max_activity == false){
-    while ( start != finish )
-    {
-      minus_dt = t_lastspike_ - ( start->t_ + dendritic_delay );
-      ++start;
-      // get_history() should make sure that
-      // start->t_ > t_lastspike - dendritic_delay, i.e. minus_dt < 0
-      assert( minus_dt < -1.0 * kernel().connection_manager.get_stdp_eps() );
-      if (minus_dt < (-1.0 * dendritic_delay - 2.0)){
-        weight_ = facilitate_( weight_, Kplus_ * std::exp( minus_dt / tau_plus_ ) );
-      }
+  while ( start != finish )
+  {
+    minus_dt = t_lastspike_ - ( start->t_ + dendritic_delay );
+    ++start;
+    // get_history() should make sure that
+    // start->t_ > t_lastspike - dendritic_delay, i.e. minus_dt < 0
+    assert( minus_dt < -1.0 * kernel().connection_manager.get_stdp_eps() );
+    if (minus_dt < (-1.0 * dendritic_delay - delay)){
+      // hebbian learning 
+      weight_ = facilitate_( weight_, Kplus_ * std::exp( minus_dt / tau_plus_ ), &deltaf); 
+   
+      // homeostasis
+      weight_ += q * deltaf * (I_t - I_c); 
+ 
     }
-
-  // depression due to new pre-synaptic spike
-  //weight_ =
-  //  depress_( weight_, target->get_K_value( t_spike - dendritic_delay ) );
-  
-  weight_ = depress_( weight_ ); 
   }
 
+  // depression due to new pre-synaptic spike
+  //weight_ = depress_exp_( weight_, target->get_K_value( t_spike - dendritic_delay ) );
+  
+  weight_ = depress_( weight_ ); 
+  //}
+
   target->update_stdp_weights( weight_ - prev_weight_ );
-  e.set_receiver( *target );
+  e.set_receiver( *target ); 
   e.set_weight( weight_ );
   // use accessor functions (inherited from Connection< >) to obtain delay in
   // steps and rport

@@ -878,6 +878,7 @@ public:
   */
 
   double get_syn_mature_counter();
+  double get_syn_active_counter();
  
   double get_total_weight();
 
@@ -886,6 +887,7 @@ public:
    */ 
 
   void increase_syn_mature_counter();
+  void increase_syn_active_counter();
 
   /**
   * get the threshold of the number of mature synapses 
@@ -955,6 +957,7 @@ private:
   index subnet_index_; //!< Index of node in parent's node array
 
   int syn_mature_counter_;
+  int syn_active_counter_;
   double th_syn_mature_counter_;  
   double total_weights_; 
 
