@@ -182,8 +182,7 @@ private:
   double
   facilitate_( double w_old, double kplus, double *deltaf)
   {
-    double norm_w = ( w_old / Wmax_ )
-      + ( lambda_ * std::pow( 1.0 - ( w_old / Wmax_ ), mu_plus_ ) * kplus );
+    double norm_w = ( w_old / Wmax_ ) + ( lambda_ * kplus );
     
     double w_new = norm_w < 1.0 ? norm_w * Wmax_ : Wmax_;
     *deltaf = w_new - w_old;
@@ -216,7 +215,7 @@ private:
   double mu_minus_;
   double Wmax_;
   double Kplus_;
-  double I_t = 100;
+  double I_t = 1.5;
   double q = 0.01;
   double delay = 2;
 
@@ -284,15 +283,24 @@ STDPConnection< targetidentifierT >::send( Event& e,
       weight_ = facilitate_( weight_, Kplus_ * std::exp( minus_dt / tau_plus_ ), &deltaf); 
    
       // homeostasis
-      weight_ += q * deltaf * (I_t - I_c); 
- 
+      //if (I_c > 0) {
+      //  printf("homo + faci %f \n", mu_plus_ * (I_t - I_c) + deltaf);
+      //  printf("homo %f \n", mu_plus_ * (I_t - I_c));
+      //  printf("faci %f \n", deltaf);
+      //  printf("I_c %f \n", I_c);
+      //}
+      
+      weight_ += mu_plus_ * (I_t - I_c); 
+      weight_ = depress_( weight_ ); 
+      //weight_ = depress_exp_( weight_, target->get_K_value( t_spike - dendritic_delay ) ); 
     }
   }
 
   // depression due to new pre-synaptic spike
   //weight_ = depress_exp_( weight_, target->get_K_value( t_spike - dendritic_delay ) );
   
-  weight_ = depress_( weight_ ); 
+  //weight_ = depress_( weight_ ); 
+  
   //}
 
   target->update_stdp_weights( weight_ - prev_weight_ );
@@ -317,7 +325,7 @@ STDPConnection< targetidentifierT >::STDPConnection()
   , tau_plus_( 20.0 )
   , lambda_( 0.01 )
   , alpha_( 1.0 )
-  , mu_plus_( 1.0 )
+  , mu_plus_( 0.005 )
   , mu_minus_( 1.0 )
   , Wmax_( 100.0 )
   , Kplus_( 0.0 )
