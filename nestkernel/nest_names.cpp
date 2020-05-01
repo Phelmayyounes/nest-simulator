@@ -45,6 +45,8 @@ const Name ahp_bug( "ahp_bug" );
 const Name allow_offgrid_spikes( "allow_offgrid_spikes" );
 const Name allow_offgrid_times( "allow_offgrid_times" );
 const Name alpha( "alpha" );
+const Name It( "It" );
+const Name hs( "hs" );
 const Name alpha_1( "alpha_1" );
 const Name alpha_2( "alpha_2" );
 const Name Aminus( "Aminus" );

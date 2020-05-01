@@ -215,13 +215,10 @@ private:
   double mu_minus_;
   double Wmax_;
   double Kplus_;
-  double I_t = 1.5;
-  double q = 0.01;
-  double delay = 2;
-
+  double It_;
+  double hs_;
 
   double t_lastspike_;
-  bool is_active_ = false;
 };
 
 
@@ -246,10 +243,7 @@ STDPConnection< targetidentifierT >::send( Event& e,
   double dendritic_delay = get_delay();
 
   //bool reach_max_activity = target->get_reach_max_activity();
-  double I_c = target->get_th_syn_mature_counter();
-  //double total_weight = target->get_total_weight();
-  //
-  double prev_weight_ = weight_;
+  double Ic = target->get_th_syn_mature_counter();
 
   // get spike history in relevant range (t1, t2] from post-synaptic neuron
   std::deque< histentry >::iterator start;
@@ -270,6 +264,7 @@ STDPConnection< targetidentifierT >::send( Event& e,
   // facilitation due to post-synaptic spikes since last pre-synaptic spike
   double minus_dt;
   double deltaf;
+  //double d = 2;
 
   while ( start != finish )
   {
@@ -278,32 +273,25 @@ STDPConnection< targetidentifierT >::send( Event& e,
     // get_history() should make sure that
     // start->t_ > t_lastspike - dendritic_delay, i.e. minus_dt < 0
     assert( minus_dt < -1.0 * kernel().connection_manager.get_stdp_eps() );
-    if (minus_dt < (-1.0 * dendritic_delay - delay)){
-      // hebbian learning 
-      weight_ = facilitate_( weight_, Kplus_ * std::exp( minus_dt / tau_plus_ ), &deltaf); 
-   
+    //if(minus_dt < (-1.0 * dendritic_delay - d)){
+    
+    // hebbian learning 
+    weight_ = facilitate_( weight_, Kplus_ * std::exp( minus_dt / tau_plus_ ), &deltaf);  
+    weight_ = depress_( weight_ ); 
+
+    // homoestasis
+    weight_ += hs_ * (It_ - Ic); 
+
       // homeostasis
-      //if (I_c > 0) {
-      //  printf("homo + faci %f \n", mu_plus_ * (I_t - I_c) + deltaf);
-      //  printf("homo %f \n", mu_plus_ * (I_t - I_c));
-      //  printf("faci %f \n", deltaf);
+      //if (I_c > 0 and minus_dt > -40.) {
+      //  printf("homo + faci %f \n", mu_plus_ * (It_ - I_c) + deltaf);
+      //  printf("homo %f \n", mu_plus_ * (It_ - I_c));
+      //  printf("faci %f, weight %f, minus_dt %f \n", deltaf, weight_, minus_dt);
       //  printf("I_c %f \n", I_c);
       //}
-      
-      weight_ += mu_plus_ * (I_t - I_c); 
-      weight_ = depress_( weight_ ); 
-      //weight_ = depress_exp_( weight_, target->get_K_value( t_spike - dendritic_delay ) ); 
-    }
+    //} 
   }
 
-  // depression due to new pre-synaptic spike
-  //weight_ = depress_exp_( weight_, target->get_K_value( t_spike - dendritic_delay ) );
-  
-  //weight_ = depress_( weight_ ); 
-  
-  //}
-
-  target->update_stdp_weights( weight_ - prev_weight_ );
   e.set_receiver( *target ); 
   e.set_weight( weight_ );
   // use accessor functions (inherited from Connection< >) to obtain delay in
@@ -325,6 +313,8 @@ STDPConnection< targetidentifierT >::STDPConnection()
   , tau_plus_( 20.0 )
   , lambda_( 0.01 )
   , alpha_( 1.0 )
+  , It_( 1.0 )
+  , hs_( 0.01 )
   , mu_plus_( 0.005 )
   , mu_minus_( 1.0 )
   , Wmax_( 100.0 )
@@ -341,6 +331,8 @@ STDPConnection< targetidentifierT >::STDPConnection(
   , tau_plus_( rhs.tau_plus_ )
   , lambda_( rhs.lambda_ )
   , alpha_( rhs.alpha_ )
+  , It_( rhs.It_ )
+  , hs_( rhs.hs_ )
   , mu_plus_( rhs.mu_plus_ )
   , mu_minus_( rhs.mu_minus_ )
   , Wmax_( rhs.Wmax_ )
@@ -358,6 +350,8 @@ STDPConnection< targetidentifierT >::get_status( DictionaryDatum& d ) const
   def< double >( d, names::tau_plus, tau_plus_ );
   def< double >( d, names::lambda, lambda_ );
   def< double >( d, names::alpha, alpha_ );
+  def< double >( d, names::It, It_ );
+  def< double >( d, names::hs, hs_ );
   def< double >( d, names::mu_plus, mu_plus_ );
   def< double >( d, names::mu_minus, mu_minus_ );
   def< double >( d, names::Wmax, Wmax_ );
@@ -374,6 +368,8 @@ STDPConnection< targetidentifierT >::set_status( const DictionaryDatum& d,
   updateValue< double >( d, names::tau_plus, tau_plus_ );
   updateValue< double >( d, names::lambda, lambda_ );
   updateValue< double >( d, names::alpha, alpha_ );
+  updateValue< double >( d, names::It, It_ );
+  updateValue< double >( d, names::hs, hs_ );
   updateValue< double >( d, names::mu_plus, mu_plus_ );
   updateValue< double >( d, names::mu_minus, mu_minus_ );
   updateValue< double >( d, names::Wmax, Wmax_ );

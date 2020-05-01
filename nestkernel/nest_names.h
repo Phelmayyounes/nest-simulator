@@ -66,6 +66,8 @@ extern const Name ahp_bug;
 extern const Name allow_offgrid_spikes;
 extern const Name allow_offgrid_times;
 extern const Name alpha;
+extern const Name hs;
+extern const Name It;
 extern const Name alpha_1;
 extern const Name alpha_2;
 extern const Name Aminus;
