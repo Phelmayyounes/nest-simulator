@@ -280,7 +280,7 @@ STDPConnection< targetidentifierT >::send( Event& e,
     weight_ = depress_( weight_ ); 
 
     // homoestasis
-    weight_ += hs_ * (It_ - Ic); 
+    weight_ = weight_ * (1 + hs_ * (It_ - Ic) * weight_); 
 
       // homeostasis
       //if (I_c > 0 and minus_dt > -40.) {
