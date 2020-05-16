@@ -193,8 +193,9 @@ private:
   double
   facilitate_exp_( double perm, double kplus, double gain)
   {
+    double mu = 0; 
     double norm_perm = ( perm / Pmax_ )
-    + ( gain * std::pow( 1.0 - ( perm / Pmax_ ), mu_plus_ ) * kplus );
+    + ( gain * std::pow( 1.0 - ( perm / Pmax_ ), mu ) * kplus );
     return norm_perm < 1.0 ? norm_perm * Pmax_ : Pmax_;
   }
 
@@ -229,11 +230,13 @@ private:
   double Kplus_;
   double Delta_plus_;
   double Delta_minus_;
-  
+
   double t_mean_;
   double t_var_;
   double th_perm_;
   double t_lastspike_;
+  double It_ = 1;
+  double hs_ = 0.02;
 
   bool is_mature_ = true;
 };
@@ -258,8 +261,6 @@ STDSPConnection< targetidentifierT >::send( Event& e,
   // target
   Node* target = get_target( t );
   double dendritic_delay = get_delay();
-  double reach_max_level = target->get_reach_max_activity();
-  double th_syn_mature_counter = target->get_th_syn_mature_counter();
 
   // get spike history in relevant range (t1, t2] from post-synaptic neuron
   std::deque< histentry >::iterator start;
@@ -280,38 +281,31 @@ STDSPConnection< targetidentifierT >::send( Event& e,
   
   // facilitation due to post-synaptic spikes since last pre-synaptic spike
   double minus_dt; 
-  double counter = target->get_syn_mature_counter();
   
   float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
   // double gain = r * lambda_; 
-  double gain = lambda_; 
-  
-  if (reach_max_level == false) 
-  {
-      while ( start != finish )
-      {
-          minus_dt = t_lastspike_ - ( start->t_ + dendritic_delay ); 
-          // printf("\n last spike %lf, start %lf, minus_dt %f, t %f", t_lastspike_ , start->t_, minus_dt, t_spike);
-          ++start;
+  double gain = lambda_;  
+  double Ic = target->get_th_syn_mature_counter();
 
-          // get_history() should make sure that
-          // start->t_ > t_lastspike - dendritic_delay, i.e. minus_dt < 0
-          assert( minus_dt < -1.0 * kernel().connection_manager.get_stdp_eps() );
-          if ( minus_dt < (-1.0 * dendritic_delay - 2.0)){
-              permanence_ = facilitate_exp_( permanence_, Kplus_ * std::exp( minus_dt / tau_plus_ ), gain);
-          }
+  while ( start != finish )
+  {
+      minus_dt = t_lastspike_ - ( start->t_ + dendritic_delay ); 
+      // printf("\n last spike %lf, start %lf, minus_dt %f, t %f", t_lastspike_ , start->t_, minus_dt, t_spike);
+      ++start;
+
+      // get_history() should make sure that
+      // start->t_ > t_lastspike - dendritic_delay, i.e. minus_dt < 0
+      assert( minus_dt < -1.0 * kernel().connection_manager.get_stdp_eps() );
+      //if ( minus_dt < (-1.0 * dendritic_delay - 2.0)){
+      if ( minus_dt > -100 ){
+          permanence_ = facilitate_exp_( permanence_, Kplus_ * std::exp( minus_dt / tau_plus_ ), gain);
+          permanence_ += mu_plus_* (It_ - Ic); 
       }
+   }
    
       // depression due to new pre-synaptic spike
       // permanence_ =  depress_exp_( permanence_, target->get_K_value( t_spike - dendritic_delay ) );
-      permanence_ = depress_( permanence_ );
-  }
- 
-  if ((permanence_ > th_perm_) && is_mature_)
-  {
-    target->increase_syn_mature_counter();
-    is_mature_ = false;
-  }    
+      //permanence_ = depress_( permanence_ );
 
   // update weight
   if ( permanence_ > th_perm_ )
@@ -349,8 +343,8 @@ STDSPConnection< targetidentifierT >::STDSPConnection()
   , mu_plus_( 1.0 )
   , mu_minus_( 1.0 )
   , Wmax_( 100.0 )
-  , Pmax_( 4000.0 )  
-  , th_perm_( 2000.0 )  
+  , Pmax_( 100.0 )  
+  , th_perm_( 10.0 )  
   , Kplus_( 0.0 ) 
   , Delta_plus_( 0.1 ) 
   , Delta_minus_( 0.0 )
