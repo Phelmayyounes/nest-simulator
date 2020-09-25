@@ -274,20 +274,14 @@ STDPConnection< targetidentifierT >::send( Event& e,
     // start->t_ > t_lastspike - dendritic_delay, i.e. minus_dt < 0
     assert( minus_dt < -1.0 * kernel().connection_manager.get_stdp_eps() );
     //if(minus_dt < (-1.0 * dendritic_delay - d)){
-    if(minus_dt > -40.){
+    if(minus_dt > -100.){
     
     // hebbian learning 
     weight_ = facilitate_( weight_, Kplus_ * std::exp( minus_dt / tau_plus_ ), &deltaf);  
-    weight_ = depress_( weight_ ); 
 
     // homoestasis
-    //weight_ += hs_ * (It_ - Ic) ; 
     //weight_ = weight_ * (1 + hs_ * (It_ - Ic) * weight_); 
-
-    if(Ic < 1.5){ 
-        //weight_ = weight_ * (1 + hs_ * (It_ - Ic) * weight_); 
-        weight_ += hs_ * (It_ - Ic); 
-    }    
+    weight_ += hs_ * (It_ - Ic); 
 
       // homeostasis
       //if (Ic > 0) {
@@ -300,11 +294,8 @@ STDPConnection< targetidentifierT >::send( Event& e,
     }
   }
 
-  if(Ic > 1.5){ 
-    //weight_ = weight_ * (1 + hs_ * (It_ - Ic) * weight_); 
-    weight_ += hs_ * (It_ - Ic); 
-    //weight_ = weight_ * (1 + hs_ * (It_ - Ic)); 
-  }    
+  // depress 
+  weight_ = depress_( weight_ ); 
 
   e.set_receiver( *target ); 
   e.set_weight( weight_ );
