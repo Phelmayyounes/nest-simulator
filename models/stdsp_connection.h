@@ -191,11 +191,11 @@ private:
   }
 
   double
-  facilitate_exp_( double perm, double kplus, double gain)
+  facilitate_exp_( double perm, double kplus)
   {
     double mu = 0; 
     double norm_perm = ( perm / Pmax_ )
-    + ( gain * std::pow( 1.0 - ( perm / Pmax_ ), mu ) * kplus );
+    + ( lambda_ * std::pow( 1.0 - ( perm / Pmax_ ), mu ) * kplus );
     return norm_perm < 1.0 ? norm_perm * Pmax_ : Pmax_;
   }
 
@@ -283,9 +283,9 @@ STDSPConnection< targetidentifierT >::send( Event& e,
   double minus_dt; 
   
   float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-  // double gain = r * lambda_; 
-  double gain = lambda_;  
-  double Ic = target->get_th_syn_mature_counter();
+  
+  // get the dendritic firing rate
+  double Ic = target->get_dendritic_firing_rate();
 
   while ( start != finish )
   {
@@ -296,16 +296,18 @@ STDSPConnection< targetidentifierT >::send( Event& e,
       // get_history() should make sure that
       // start->t_ > t_lastspike - dendritic_delay, i.e. minus_dt < 0
       assert( minus_dt < -1.0 * kernel().connection_manager.get_stdp_eps() );
-      //if ( minus_dt < (-1.0 * dendritic_delay - 2.0)){
-      if ( minus_dt > -100 ){
-          permanence_ = facilitate_exp_( permanence_, Kplus_ * std::exp( minus_dt / tau_plus_ ), gain);
+      if ( minus_dt > -100. and minus_dt < (-1.0 * dendritic_delay - 2.0) ){
+          
+          // hebbian learning     
+          permanence_ = facilitate_exp_( permanence_, Kplus_ * std::exp( minus_dt / tau_plus_ ));
+          
+          // homeostasis control
           permanence_ += mu_plus_* (It_ - Ic); 
       }
    }
    
-      // depression due to new pre-synaptic spike
-      // permanence_ =  depress_exp_( permanence_, target->get_K_value( t_spike - dendritic_delay ) );
-      //permanence_ = depress_( permanence_ );
+   // depression due to new pre-synaptic spike
+   permanence_ = depress_( permanence_ );
 
   // update weight
   if ( permanence_ > th_perm_ )

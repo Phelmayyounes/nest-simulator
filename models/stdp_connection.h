@@ -180,12 +180,10 @@ public:
 
 private:
   double
-  facilitate_( double w_old, double kplus, double *deltaf)
+  facilitate_( double w_old, double kplus)
   {
-    double norm_w = ( w_old / Wmax_ ) + ( lambda_ * kplus );
-    
+    double norm_w = ( w_old / Wmax_ ) + ( lambda_ * kplus );    
     double w_new = norm_w < 1.0 ? norm_w * Wmax_ : Wmax_;
-    *deltaf = w_new - w_old;
 
     return w_new;
   }
@@ -243,7 +241,7 @@ STDPConnection< targetidentifierT >::send( Event& e,
   double dendritic_delay = get_delay();
 
   //bool reach_max_activity = target->get_reach_max_activity();
-  double Ic = target->get_th_syn_mature_counter();
+  double Ic = target->get_dendritic_firing_rate();
 
   // get spike history in relevant range (t1, t2] from post-synaptic neuron
   std::deque< histentry >::iterator start;
@@ -263,8 +261,6 @@ STDPConnection< targetidentifierT >::send( Event& e,
     &finish );
   // facilitation due to post-synaptic spikes since last pre-synaptic spike
   double minus_dt;
-  double deltaf;
-  //double d = 2;
 
   while ( start != finish )
   {
@@ -273,24 +269,13 @@ STDPConnection< targetidentifierT >::send( Event& e,
     // get_history() should make sure that
     // start->t_ > t_lastspike - dendritic_delay, i.e. minus_dt < 0
     assert( minus_dt < -1.0 * kernel().connection_manager.get_stdp_eps() );
-    //if(minus_dt < (-1.0 * dendritic_delay - d)){
-    if(minus_dt > -100.){
+    if ( minus_dt > -100. and minus_dt < (-1.0 * dendritic_delay - 2.0) ){
     
-    // hebbian learning 
-    weight_ = facilitate_( weight_, Kplus_ * std::exp( minus_dt / tau_plus_ ), &deltaf);  
+      // hebbian learning 
+      weight_ = facilitate_( weight_, Kplus_ * std::exp( minus_dt / tau_plus_ ));  
 
-    // homoestasis
-    //weight_ = weight_ * (1 + hs_ * (It_ - Ic) * weight_); 
-    weight_ += hs_ * (It_ - Ic); 
-
-      // homeostasis
-      //if (Ic > 0) {
-      //  printf("homo + faci %f \n", hs_ * (It_ - Ic) + deltaf);
-      // printf("homo %f \n", hs_ * (It_ - Ic));
-      //  printf("faci %f, weight %f, minus_dt %f \n", deltaf, weight_, minus_dt);
-      //  printf("Ic %f \n", Ic);
-      //}
-    //} 
+      // homoestasis control
+      weight_ += hs_ * (It_ - Ic); 
     }
   }
 

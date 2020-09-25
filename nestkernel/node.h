@@ -893,7 +893,7 @@ public:
   * get the threshold of the number of mature synapses 
   */
 
-  virtual double get_th_syn_mature_counter();
+  virtual double get_dendritic_firing_rate();
   virtual bool get_reach_max_activity();
 
 private:

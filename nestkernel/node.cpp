@@ -501,7 +501,7 @@ Node::get_syn_active_counter()
 }
 
 double 
-Node::get_th_syn_mature_counter()
+Node::get_dendritic_firing_rate()
 {
   throw UnexpectedEvent();
 }    
