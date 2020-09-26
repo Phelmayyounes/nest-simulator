@@ -230,15 +230,17 @@ private:
   double Kplus_;
   double Delta_plus_;
   double Delta_minus_;
+  double hs_;
 
+  // remove t_mean_ and t_var_ 
   double t_mean_;
   double t_var_;
+
   double th_perm_;
   double t_lastspike_;
-  double It_ = 1;
-  double hs_ = 0.02;
-
-  bool is_mature_ = true;
+  double It_;
+  double max_dt_ = -100.;
+  double min_dt_ = -3.;
 };
 
 
@@ -296,13 +298,13 @@ STDSPConnection< targetidentifierT >::send( Event& e,
       // get_history() should make sure that
       // start->t_ > t_lastspike - dendritic_delay, i.e. minus_dt < 0
       assert( minus_dt < -1.0 * kernel().connection_manager.get_stdp_eps() );
-      if ( minus_dt > -100. and minus_dt < (-1.0 * dendritic_delay - 2.0) ){
+      if ( minus_dt > max_dt_ and minus_dt < min_dt_ ){
           
           // hebbian learning     
           permanence_ = facilitate_exp_( permanence_, Kplus_ * std::exp( minus_dt / tau_plus_ ));
           
           // homeostasis control
-          permanence_ += mu_plus_* (It_ - Ic); 
+          permanence_ += hs_* (It_ - Ic); 
       }
    }
    
@@ -351,6 +353,8 @@ STDSPConnection< targetidentifierT >::STDSPConnection()
   , Delta_plus_( 0.1 ) 
   , Delta_minus_( 0.0 )
   , t_lastspike_( 0.0 )
+  , hs_( 1.0 )
+  , It_( 1.0 )
   , t_mean_( 30.0 )
   , t_var_( 5.0 )
 {
@@ -374,6 +378,8 @@ STDSPConnection< targetidentifierT >::STDSPConnection(
   , Delta_plus_( rhs.Delta_plus_ )   
   , Delta_minus_( rhs.Delta_minus_ )  
   , t_lastspike_( rhs.t_lastspike_ )
+  , hs_( rhs.hs_ )
+  , It_( rhs.It_ )
   , t_mean_( rhs.t_mean_ )
   , t_var_( rhs.t_var_ )
 {
@@ -394,6 +400,8 @@ STDSPConnection< targetidentifierT >::get_status( DictionaryDatum& d ) const
   def< double >( d, names::mu_minus, mu_minus_ );
   def< double >( d, names::Wmax, Wmax_ ); 
   def< double >( d, names::Pmax, Pmax_ ); 
+  def< double >( d, names::hs, hs_ ); 
+  def< double >( d, names::It, It_ ); 
   def< double >( d, names::t_mean, t_mean_ ); 
   def< double >( d, names::t_var, t_var_ ); 
   def< double >( d, names::Delta_plus, Delta_plus_ );
@@ -417,6 +425,8 @@ STDSPConnection< targetidentifierT >::set_status( const DictionaryDatum& d,
   updateValue< double >( d, names::mu_minus, mu_minus_ );
   updateValue< double >( d, names::Wmax, Wmax_ );
   updateValue< double >( d, names::Pmax, Pmax_ );
+  updateValue< double >( d, names::hs, hs_ );
+  updateValue< double >( d, names::It, It_ );
   updateValue< double >( d, names::Delta_plus, Delta_plus_ );
   updateValue< double >( d, names::Delta_minus, Delta_minus_ );
   updateValue< double >( d, names::t_mean, t_mean_ );
