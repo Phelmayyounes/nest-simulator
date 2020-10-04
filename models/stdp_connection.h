@@ -184,7 +184,7 @@ private:
   {
     double w =  w_old + ( lambda_ * kplus * Wmax_);    
 
-    return w_new;
+    return w;
   }
 
   double
