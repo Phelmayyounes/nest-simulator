@@ -182,8 +182,7 @@ private:
   double
   facilitate_( double w_old, double kplus)
   {
-    double norm_w = ( w_old / Wmax_ ) + ( lambda_ * kplus );    
-    double w_new = norm_w < 1.0 ? norm_w * Wmax_ : Wmax_;
+    double w =  w_old + ( lambda_ * kplus * Wmax_);    
 
     return w_new;
   }
@@ -269,7 +268,7 @@ STDPConnection< targetidentifierT >::send( Event& e,
     // get_history() should make sure that
     // start->t_ > t_lastspike - dendritic_delay, i.e. minus_dt < 0
     assert( minus_dt < -1.0 * kernel().connection_manager.get_stdp_eps() );
-    if ( minus_dt > -100. and minus_dt < (-1.0 * dendritic_delay - 2.0) ){
+    if ( minus_dt > -50. and minus_dt < (-1.0 * dendritic_delay - 2.0) ){
     
       // hebbian learning 
       weight_ = facilitate_( weight_, Kplus_ * std::exp( minus_dt / tau_plus_ ));  
