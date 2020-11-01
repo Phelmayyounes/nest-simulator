@@ -274,7 +274,7 @@ STDPConnection< targetidentifierT >::send( Event& e,
       weight_ = facilitate_( weight_, Kplus_ * std::exp( minus_dt / tau_plus_ ));  
 
       // homoestasis control
-      //weight_ += hs_ * (It_ - Ic); 
+      weight_ += hs_ * (It_ - Ic); 
     }
   }
 
