@@ -289,6 +289,8 @@ const Name ms_per_tic( "ms_per_tic" );
 const Name mu( "mu" );
 const Name mu_minus( "mu_minus" );
 const Name mu_plus( "mu_plus" );
+const Name It( "It" );
+const Name hs( "hs" );
 const Name mult_coupling( "mult_coupling" );
 const Name music_channel( "music_channel" );
 

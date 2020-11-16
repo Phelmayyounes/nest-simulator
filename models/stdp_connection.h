@@ -181,9 +181,8 @@ private:
   double
   facilitate_( double w_old, double kplus)
   {
-    double w =  w_old + ( lambda_ * kplus * Wmax_);    
-
-    return w;
+    double norm_w = ( w_old / Wmax_ ) + ( lambda_ * std::pow( w_old / Wmax_ , mu_plus_ ) * kplus );
+    return norm_w < 1.0 ? norm_w * Wmax_ : Wmax_;
   }
 
   double
@@ -211,8 +210,8 @@ private:
   double mu_minus_;
   double Wmax_;
   double Kplus_;
-  //double It_;
-  //double hs_;
+  double It_;
+  double hs_;
 
   double t_lastspike_;
 };
@@ -239,7 +238,7 @@ STDPConnection< targetidentifierT >::send( Event& e,
   double dendritic_delay = get_delay();
 
   //bool reach_max_activity = target->get_reach_max_activity();
-  //double Ic = target->get_dendritic_firing_rate();
+  double Ic = target->get_dendritic_firing_rate();
 
   // get spike history in relevant range (t1, t2] from post-synaptic neuron
   std::deque< histentry >::iterator start;
@@ -273,7 +272,7 @@ STDPConnection< targetidentifierT >::send( Event& e,
       weight_ = facilitate_( weight_, Kplus_ * std::exp( minus_dt / tau_plus_ ));  
 
       // homoestasis control
-      //weight_ += hs_ * (It_ - Ic); 
+      weight_ += hs_ * (It_ - Ic); 
     }
   }
 
@@ -301,8 +300,8 @@ STDPConnection< targetidentifierT >::STDPConnection()
   , tau_plus_( 20.0 )
   , lambda_( 0.01 )
   , alpha_( 1.0 )
-  //, It_( 1.0 )
-  //, hs_( 0.01 )
+  , It_( 1.0 )
+  , hs_( 0.01 )
   , mu_plus_( 0.005 )
   , mu_minus_( 1.0 )
   , Wmax_( 100.0 )
@@ -319,8 +318,8 @@ STDPConnection< targetidentifierT >::STDPConnection(
   , tau_plus_( rhs.tau_plus_ )
   , lambda_( rhs.lambda_ )
   , alpha_( rhs.alpha_ )
-  //, It_( rhs.It_ )
-  //, hs_( rhs.hs_ )
+  , It_( rhs.It_ )
+  , hs_( rhs.hs_ )
   , mu_plus_( rhs.mu_plus_ )
   , mu_minus_( rhs.mu_minus_ )
   , Wmax_( rhs.Wmax_ )
@@ -338,8 +337,8 @@ STDPConnection< targetidentifierT >::get_status( DictionaryDatum& d ) const
   def< double >( d, names::tau_plus, tau_plus_ );
   def< double >( d, names::lambda, lambda_ );
   def< double >( d, names::alpha, alpha_ );
-  //def< double >( d, names::It, It_ );
-  //def< double >( d, names::hs, hs_ );
+  def< double >( d, names::It, It_ );
+  def< double >( d, names::hs, hs_ );
   def< double >( d, names::mu_plus, mu_plus_ );
   def< double >( d, names::mu_minus, mu_minus_ );
   def< double >( d, names::Wmax, Wmax_ );
@@ -356,8 +355,8 @@ STDPConnection< targetidentifierT >::set_status( const DictionaryDatum& d,
   updateValue< double >( d, names::tau_plus, tau_plus_ );
   updateValue< double >( d, names::lambda, lambda_ );
   updateValue< double >( d, names::alpha, alpha_ );
-  //updateValue< double >( d, names::It, It_ );
-  //updateValue< double >( d, names::hs, hs_ );
+  updateValue< double >( d, names::It, It_ );
+  updateValue< double >( d, names::hs, hs_ );
   updateValue< double >( d, names::mu_plus, mu_plus_ );
   updateValue< double >( d, names::mu_minus, mu_minus_ );
   updateValue< double >( d, names::Wmax, Wmax_ );
