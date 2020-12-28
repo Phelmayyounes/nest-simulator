@@ -179,10 +179,12 @@ public:
 
 private:
   double
-  facilitate_( double w_old, double kplus)
+  facilitate_( double w_old)
   {
-    double norm_w = ( w_old / Wmax_ ) + ( lambda_ * std::pow( w_old / Wmax_ , mu_plus_ ) * kplus );
-    return norm_w < 1.0 ? norm_w * Wmax_ : Wmax_;
+    //double norm_w = ( w_old / Wmax_ ) + ( lambda_ * std::pow( w_old / Wmax_ , mu_plus_ ) * kplus );
+    double w =  w_old + lambda_ * std::pow(w_old, mu_plus_) * std::exp(w_old * Kplus_);
+    
+    return w < Wmax_ ? w : Wmax_;
   }
 
   double
@@ -268,11 +270,11 @@ STDPConnection< targetidentifierT >::send( Event& e,
     assert( minus_dt < -1.0 * kernel().connection_manager.get_stdp_eps() );
     if ( minus_dt > -50. and minus_dt < (-1.0 * dendritic_delay - 2.0) ){
     
-      // hebbian learning 
-      weight_ = facilitate_( weight_, Kplus_ * std::exp( minus_dt / tau_plus_ ));  
+    // hebbian learning 
+    weight_ = facilitate_( weight_ );  
 
-      // homoestasis control
-      weight_ += hs_ * (It_ - Ic); 
+    // homoestasis control
+    weight_ += hs_ * (It_ - Ic); 
     }
   }
 
@@ -287,7 +289,7 @@ STDPConnection< targetidentifierT >::send( Event& e,
   e.set_rport( get_rport() );
   e();
 
-  Kplus_ = Kplus_ * std::exp( ( t_lastspike_ - t_spike ) / tau_plus_ ) + 1.0;
+  //Kplus_ = Kplus_ * std::exp( ( t_lastspike_ - t_spike ) / tau_plus_ ) + 1.0;
 
   t_lastspike_ = t_spike;
 }
@@ -305,7 +307,7 @@ STDPConnection< targetidentifierT >::STDPConnection()
   , mu_plus_( 0.005 )
   , mu_minus_( 1.0 )
   , Wmax_( 100.0 )
-  , Kplus_( 0.0 )
+  , Kplus_( -0.15 )
   , t_lastspike_( 0.0 )
 {
 }
