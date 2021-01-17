@@ -179,11 +179,10 @@ public:
 
 private:
   double
-  facilitate_( double w_old)
+  facilitate_( double w_old, double kplus)
   {
-    //double norm_w = ( w_old / Wmax_ ) + ( lambda_ * std::pow( w_old / Wmax_ , mu_plus_ ) * kplus );
-    double w =  w_old + lambda_ * std::pow(w_old, mu_plus_) * std::exp(w_old * Kplus_);
-    
+    double w =  w_old + ( lambda_ * kplus * Wmax_);    
+
     return w < Wmax_ ? w : Wmax_;
   }
 
