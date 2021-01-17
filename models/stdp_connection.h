@@ -270,7 +270,7 @@ STDPConnection< targetidentifierT >::send( Event& e,
     if ( minus_dt > -50. and minus_dt < (-1.0 * dendritic_delay - 2.0) ){
     
     // hebbian learning 
-    weight_ = facilitate_( weight_ );  
+    weight_ = facilitate_( weight_, Kplus_ * std::exp( minus_dt / tau_plus_ ));
 
     // homoestasis control
     weight_ += hs_ * (It_ - Ic); 
