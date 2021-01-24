@@ -288,7 +288,7 @@ STDPConnection< targetidentifierT >::send( Event& e,
   e.set_rport( get_rport() );
   e();
 
-  //Kplus_ = Kplus_ * std::exp( ( t_lastspike_ - t_spike ) / tau_plus_ ) + 1.0;
+  Kplus_ = Kplus_ * std::exp( ( t_lastspike_ - t_spike ) / tau_plus_ ) + 1.0;
 
   t_lastspike_ = t_spike;
 }
@@ -306,7 +306,7 @@ STDPConnection< targetidentifierT >::STDPConnection()
   , mu_plus_( 0.005 )
   , mu_minus_( 1.0 )
   , Wmax_( 100.0 )
-  , Kplus_( -0.15 )
+  , Kplus_( 0.0 )
   , t_lastspike_( 0.0 )
 {
 }
