@@ -196,10 +196,11 @@ private:
   }
 
   double
-  depress_( double w_old, double kminus_ )
+  depress_( double w_old, double do_depress )
   {
     //printf("# Depress #");
-    double w =  w_old - alpha_ * std::pow(w_old, mu_minus_) * std::exp(w_old * kminus_);
+    double kminus_ = -0.14;
+    double w =  w_old - do_depress * alpha_ * std::pow(w_old, mu_minus_) * std::exp(w_old * kminus_);
     return w > 0 ? w : 0.0;
   }
 
@@ -279,9 +280,9 @@ STDPConnection< targetidentifierT >::send( Event& e,
   }
 
   // depression 
-  const double _K_value = -0.14;
-  //const double _K_value = target->get_K_value( t_spike - dendritic_delay );
-  weight_ = depress_( weight_, _K_value); 
+  //const double _K_value = -0.14;
+  double do_depress = target->get_K_value( t_spike - dendritic_delay );
+  weight_ = depress_( weight_, do_depress); 
 
   e.set_receiver( *target ); 
   e.set_weight( weight_ );
