@@ -206,7 +206,7 @@ private:
   {
     //printf("# Depress #");
     w = w - alpha_ * lambda_;
-    return w > 0 ? w : 0.0;
+    return w > weight_init ? w : weight_init;
   }
 
   // data members of each connection
@@ -222,6 +222,7 @@ private:
   double hs_;
 
   double t_lastspike_;
+  double weight_init = weight_;
 };
 
 
