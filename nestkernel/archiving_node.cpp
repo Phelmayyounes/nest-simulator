@@ -115,8 +115,8 @@ nest::Archiving_Node::get_K_value( double t )
   double tmax = 50.;
   while ( i >= 0 )
   {
-    //if ( t - history_[ i ].t_ > kernel().connection_manager.get_stdp_eps() )
-    if ( t - history_[ i ].t_ > kernel().connection_manager.get_stdp_eps() and t - history_[ i ].t_ < tmax )
+    if ( t - history_[ i ].t_ > kernel().connection_manager.get_stdp_eps() )
+    //if ( t - history_[ i ].t_ > kernel().connection_manager.get_stdp_eps() and t - history_[ i ].t_ < tmax )
     {
       //trace_ = ( history_[ i ].Kminus_ * std::exp( ( history_[ i ].t_ - t ) * tau_minus_inv_ ) );
       //return trace_;
