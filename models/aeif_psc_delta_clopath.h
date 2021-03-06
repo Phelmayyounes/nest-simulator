@@ -88,6 +88,9 @@ by Claudia Clopath et al. that can be found on ModelDB [3]_. The clamping is
 important to mimic a spike which is otherwise not described by the aeif neuron
 model.
 
+For implementation details see the
+`aeif_models_implementation <../model_details/aeif_models_implementation.ipynb>`_ notebook.
+
 Parameters
 ++++++++++
 
@@ -191,7 +194,7 @@ aeif_psc_delta, clopath_synapse, hh_psc_alpha_clopath
 
 EndUserDocs */
 
-class aeif_psc_delta_clopath : public Clopath_Archiving_Node
+class aeif_psc_delta_clopath : public ClopathArchivingNode
 {
 
 public:
@@ -439,7 +442,7 @@ aeif_psc_delta_clopath::get_status( DictionaryDatum& d ) const
 {
   P_.get( d );
   S_.get( d );
-  Clopath_Archiving_Node::get_status( d );
+  ClopathArchivingNode::get_status( d );
 
   ( *d )[ names::recordables ] = recordablesMap_.get_list();
 }
@@ -456,7 +459,7 @@ aeif_psc_delta_clopath::set_status( const DictionaryDatum& d )
   // write them back to (P_, S_) before we are also sure that
   // the properties to be set in the parent class are internally
   // consistent.
-  Clopath_Archiving_Node::set_status( d );
+  ClopathArchivingNode::set_status( d );
 
   // if we get here, temporaries contain consistent set of properties
   P_ = ptmp;

@@ -40,15 +40,19 @@ Description
 +++++++++++
 
 This synapse implements the depression model described in [1, p 1678].
-See docs/model_details/HillTononi.ipynb for details.
 
 Synaptic dynamics are given by
 
-P'(t) = ( 1 - P ) / \tau_P
-P(T+) = (1 - \delta_P) P(T-)    \text{ for T : time of a spike } \\
-P(t=0) = 1
+.. math::
 
-w(t) = w_{max} * P(t)   is the resulting synaptic weight
+    P'(t) = ( 1 - P ) / \tau_P  \\
+    P(T+) = (1 - \delta_P) P(T-)    \text{ for T : time of a spike } \\
+    P(t=0) = 1
+
+:math:`w(t) = w_{max} * P(t)`   is the resulting synaptic weight
+
+For implementation details see:
+`HillTononi_model <../model_details/HillTononiModels.ipynb>`_
 
 Parameters
 ++++++++++
@@ -98,7 +102,7 @@ public:
    * Copy constructor.
    * Needs to be defined properly in order for GenericConnector to work.
    */
-  HTConnection( const HTConnection& );
+  HTConnection( const HTConnection& ) = default;
 
   // Explicitly declare all methods inherited from the dependent base
   // ConnectionBase. This avoids explicit name prefixes in all places these
@@ -207,17 +211,6 @@ HTConnection< targetidentifierT >::HTConnection()
   , delta_P_( 0.125 )
   , p_( 1.0 )
   , t_lastspike_( 0.0 )
-{
-}
-
-template < typename targetidentifierT >
-HTConnection< targetidentifierT >::HTConnection( const HTConnection& rhs )
-  : ConnectionBase( rhs )
-  , weight_( rhs.weight_ )
-  , tau_P_( rhs.tau_P_ )
-  , delta_P_( rhs.delta_P_ )
-  , p_( rhs.p_ )
-  , t_lastspike_( rhs.t_lastspike_ )
 {
 }
 
