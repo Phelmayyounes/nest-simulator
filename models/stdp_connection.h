@@ -181,7 +181,7 @@ private:
   facilitate_( double w_old)
   {
     //double norm_w = ( w_old / Wmax_ ) + ( lambda_ * std::pow( w_old / Wmax_ , mu_plus_ ) * kplus );
-    double w =  w_old + lambda_ * std::pow(w_old, mu_plus_) * std::exp(w_old * Kplus_);
+    double w =  w_old + lambda_ * std::pow(w_old, mu_plus_) * std::exp(w_old * nu_plus_);
     
     return w < Wmax_ ? w : Wmax_;
   }
@@ -198,8 +198,7 @@ private:
   depress_( double w_old, double do_depress )
   {
     //printf("# Depress #");
-    double kminus_ = -0.14;
-    double w =  w_old - do_depress * alpha_ * std::pow(w_old, mu_minus_) * std::exp(w_old * kminus_);
+    double w =  w_old - do_depress * alpha_ * std::pow(w_old, mu_minus_) * std::exp(w_old * nu_minus_);
     return w > 0 ? w : 0.0;
   }
 
@@ -212,6 +211,8 @@ private:
   double mu_minus_;
   double Wmax_;
   double Kplus_;
+  double nu_plus_;
+  double nu_minus_;
   double It_;
   double hs_;
 
@@ -308,6 +309,8 @@ STDPConnection< targetidentifierT >::STDPConnection()
   , hs_( 0.01 )
   , mu_plus_( 0.005 )
   , mu_minus_( 1.0 )
+  , nu_plus_( -0.15 )
+  , nu_minus_( -0.14 )
   , Wmax_( 100.0 )
   , Kplus_( -0.15 )
   , t_lastspike_( 0.0 )
@@ -327,6 +330,8 @@ STDPConnection< targetidentifierT >::get_status( DictionaryDatum& d ) const
   def< double >( d, names::hs, hs_ );
   def< double >( d, names::mu_plus, mu_plus_ );
   def< double >( d, names::mu_minus, mu_minus_ );
+  def< double >( d, names::nu_plus, nu_plus_ );
+  def< double >( d, names::nu_minus, nu_minus_ );
   def< double >( d, names::Wmax, Wmax_ );
   def< long >( d, names::size_of, sizeof( *this ) );
 }
@@ -345,6 +350,8 @@ STDPConnection< targetidentifierT >::set_status( const DictionaryDatum& d,
   updateValue< double >( d, names::hs, hs_ );
   updateValue< double >( d, names::mu_plus, mu_plus_ );
   updateValue< double >( d, names::mu_minus, mu_minus_ );
+  updateValue< double >( d, names::nu_plus, nu_plus_ );
+  updateValue< double >( d, names::nu_minus, nu_minus_ );
   updateValue< double >( d, names::Wmax, Wmax_ );
 
   // check if weight_ and Wmax_ has the same sign

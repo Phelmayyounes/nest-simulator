@@ -309,6 +309,8 @@ extern const Name ms_per_tic;
 extern const Name mu;
 extern const Name mu_minus;
 extern const Name mu_plus;
+extern const Name nu_minus;
+extern const Name nu_plus;
 extern const Name hs;
 extern const Name It;
 extern const Name mult_coupling;
