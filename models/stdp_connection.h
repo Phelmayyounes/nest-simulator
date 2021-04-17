@@ -181,8 +181,14 @@ private:
   facilitate_( double w_old)
   {
     //double norm_w = ( w_old / Wmax_ ) + ( lambda_ * std::pow( w_old / Wmax_ , mu_plus_ ) * kplus );
-    double w =  w_old + lambda_ * std::pow(w_old, mu_plus_) * std::exp(w_old * nu_plus_);
-    
+    //double w =  w_old + lambda_ * std::pow(w_old, mu_plus_) * std::exp(w_old * nu_plus_);
+    double w;
+    if( w_old > w_th_min_ and w_old < w_th_max_){
+        w =  w_old + lambda_ + mu_plus_;
+    } else {
+        w =  w_old + lambda_;
+    }
+
     return w < Wmax_ ? w : Wmax_;
   }
 
@@ -218,6 +224,8 @@ private:
 
   double max_dt_ = -50.;
   double min_dt_ = -4.;
+  double w_th_min_ = 15.;
+  double w_th_max_ = 20.;
   double t_lastspike_;
 };
 
