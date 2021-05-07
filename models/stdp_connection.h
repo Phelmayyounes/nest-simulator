@@ -25,6 +25,7 @@
 
 // C++ includes:
 #include <cmath>
+#include <random>
 
 // Includes from nestkernel:
 #include "common_synapse_properties.h"
@@ -227,6 +228,10 @@ private:
   double w_th_min_ = 15.;
   double w_th_max_ = 20.;
   double t_lastspike_;
+  
+  double mean = 0.0;
+  double stddev = 0.0;
+
 };
 
 
@@ -293,6 +298,18 @@ STDPConnection< targetidentifierT >::send( Event& e,
   //const double _K_value = -0.14;
   double do_depress = 1.; //target->get_K_value( t_spike - dendritic_delay );
   weight_ = depress_( weight_, do_depress); 
+
+  stddev = nu_plus_;
+
+  //added a random number to the synapses
+  std::random_device mch;
+  std::default_random_engine generator(mch());
+  std::normal_distribution<double> dist(mean, stddev);
+  
+  double dw = dist(generator);
+  weight_ += dw;
+
+  printf("\ndw=%f", dw);
 
   e.set_receiver( *target ); 
   e.set_weight( weight_ );
