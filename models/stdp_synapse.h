@@ -308,6 +308,7 @@ stdp_synapse< targetidentifierT >::send( Event& e, thread t, const CommonSynapse
   //added a random number to the synapses
   double dw = (mu_noise_ + sigma_noise_ * normal_dev_( nest::get_vp_specific_rng( get_thread() ) ));
   weight_ += dw;
+  weight_ = weight_ > 0 ? weight_ : 0.0;
 
   e.set_receiver( *target ); 
   e.set_weight( weight_ );
