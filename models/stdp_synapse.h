@@ -205,8 +205,16 @@ private:
   double
   depress_( double w_old, double do_depress )
   {
-    //printf("# Depress #");
-    double w =  w_old - do_depress * alpha_; //* std::pow(w_old, mu_minus_) * std::exp(w_old * nu_minus_);
+    double w;
+    double w_th_dmin_ = mu_plus_ - 5.;
+    if( w_old < w_th_dmin_ and w_old > w_th_max_){
+        w =  w_old - do_depress * alpha_ - mu_plus_;
+    } else {
+        w =  w_old - do_depress * alpha_;
+    }
+    
+    // double w =  w_old - do_depress * alpha_; //* std::pow(w_old, mu_minus_) * std::exp(w_old * nu_minus_);
+    
     return w > 0 ? w : 0.0;
   }
 
@@ -230,7 +238,7 @@ private:
   double max_dt_ = -50.;
   double min_dt_ = -4.;
   double w_th_min_ = 15.;
-  double w_th_max_ = 20.;
+  double w_th_max_ = 100.;
   double t_lastspike_;
   
 
