@@ -174,6 +174,7 @@ public:
    */
   void send( Event& e, thread t, const CommonSynapseProperties& cp );
 
+  nest::normal_distribution normal_dev_;
 
   class ConnTestDummyNode : public ConnTestDummyNodeBase
   {
@@ -236,7 +237,7 @@ private:
   depress_( double w )
   {
     //printf("# Depress #");
-    w = w - alpha_ * lambda_;
+    w = w - alpha_ * Wmax_;
     return w > init_weight_ ? w : init_weight_;
   }
 
@@ -251,6 +252,9 @@ private:
   double Kplus_;
   double It_;
   double hs_;
+
+  double t_mean_;
+  double t_var_;
 
   double t_lastspike_;
   double max_dt_ = -50.;
@@ -269,6 +273,12 @@ template < typename targetidentifierT >
 inline void
 stdp_synapse< targetidentifierT >::send( Event& e, thread t, const CommonSynapseProperties& )
 {
+
+  auto get_thread = [t]()
+  {
+    return t;
+  };
+
   // synapse STDP depressing/facilitation dynamics
   double t_spike = e.get_stamp().get_ms();
 
@@ -309,7 +319,8 @@ stdp_synapse< targetidentifierT >::send( Event& e, thread t, const CommonSynapse
     if ( minus_dt > max_dt_ and  minus_dt < min_dt_ ){
     
         // Hebbian learning 
-        weight_ = facilitate_exp_( weight_, Kplus_ * std::exp( minus_dt / tau_plus_ ));
+        //weight_ = facilitate_exp_( weight_, Kplus_ * std::exp( minus_dt / tau_plus_ ));
+        weight_ = facilitate_exp_( weight_, 1. );
        
         // homoestasis control
         weight_ += hs_ * (It_ - Ic); 
@@ -321,6 +332,11 @@ stdp_synapse< targetidentifierT >::send( Event& e, thread t, const CommonSynapse
   //const double _K_value = target->get_K_value( t_spike - dendritic_delay );
   //weight_ = depress_exp_( weight_, _K_value );
   weight_ = depress_( weight_ ); 
+
+  //added a random number to the synapses
+  double dw = (t_mean_ + t_var_ * normal_dev_( nest::get_vp_specific_rng( get_thread() ) ));
+  weight_ += dw * Wmax_;
+  weight_ = weight_ > 0 ? weight_ : 0.0;
 
   e.set_receiver( *target ); 
   e.set_weight( weight_ );
@@ -350,6 +366,8 @@ stdp_synapse< targetidentifierT >::stdp_synapse()
   , Wmax_( 100.0 )
   , Kplus_( 0.0 )
   , t_lastspike_( 0.0 )
+  , t_mean_( 30.0 )
+  , t_var_( 5.0 )
 {
 }
 
@@ -366,6 +384,8 @@ stdp_synapse< targetidentifierT >::get_status( DictionaryDatum& d ) const
   def< double >( d, names::hs, hs_ );
   def< double >( d, names::mu_plus, mu_plus_ );
   def< double >( d, names::mu_minus, mu_minus_ );
+  def< double >( d, names::t_mean, t_mean_ );
+  def< double >( d, names::t_var, t_var_ );
   def< double >( d, names::Wmax, Wmax_ );
   def< long >( d, names::size_of, sizeof( *this ) );
 }
@@ -383,6 +403,8 @@ stdp_synapse< targetidentifierT >::set_status( const DictionaryDatum& d, Connect
   updateValue< double >( d, names::hs, hs_ );
   updateValue< double >( d, names::mu_plus, mu_plus_ );
   updateValue< double >( d, names::mu_minus, mu_minus_ );
+  updateValue< double >( d, names::t_mean, t_mean_ );
+  updateValue< double >( d, names::t_var, t_var_ );
   updateValue< double >( d, names::Wmax, Wmax_ );
 
   // check if weight_ and Wmax_ has the same sign

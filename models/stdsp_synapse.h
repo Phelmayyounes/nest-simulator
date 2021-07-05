@@ -145,6 +145,8 @@ public:
    */
   void send( Event& e, thread t, const CommonSynapseProperties& cp );
 
+  nest::normal_distribution normal_dev_;
+
   class ConnTestDummyNode : public ConnTestDummyNodeBase
   {
   public:
@@ -204,7 +206,7 @@ private:
   depress_( double perm )
   {
     //printf("# Depress #");
-    perm = perm - Delta_minus_;
+    perm = perm - alpha_ * Pmax_;
     return perm > init_perm_ ? perm : init_perm_;
   }
   // not used 
@@ -227,6 +229,7 @@ private:
   double mu_plus_;
   double mu_minus_;
   double Wmax_;
+  double Wmin_;
   double Pmax_;
   double Kplus_;
   double Delta_plus_;
@@ -258,6 +261,12 @@ stdsp_synapse< targetidentifierT >::send( Event& e,
   thread t,
   const CommonSynapseProperties& )
 {
+
+  auto get_thread = [t]()
+  {
+    return t;
+  };
+
   // synapse STDP depressing/facilitation dynamics
   double t_spike = e.get_stamp().get_ms();
 
@@ -303,7 +312,7 @@ stdsp_synapse< targetidentifierT >::send( Event& e,
       if ( minus_dt > max_dt_ and minus_dt < min_dt_ ){
           
           // hebbian learning     
-          permanence_ = facilitate_exp_( permanence_, Kplus_ * std::exp( minus_dt / tau_plus_ ));
+          permanence_ = facilitate_exp_( permanence_, 1. );
           
           // homeostasis control
           permanence_ += hs_* (It_ - Ic); 
@@ -313,6 +322,11 @@ stdsp_synapse< targetidentifierT >::send( Event& e,
    // depression due to new pre-synaptic spike
    permanence_ = depress_( permanence_ );
 
+  //added a random number to the synapses
+  double dp = (t_mean_ + t_var_ * normal_dev_( nest::get_vp_specific_rng( get_thread() ) ));
+  permanence_ += dp * Pmax_;
+  permanence_ = permanence_ > 0 ? permanence_ : 0.0;
+
   // update weight
   if ( permanence_ > th_perm_ )
   {
@@ -321,7 +335,7 @@ stdsp_synapse< targetidentifierT >::send( Event& e,
   }  
   else
   {
-    weight_ = 0.001;
+    weight_ = Wmin_;
   }
       
   e.set_receiver( *target );
@@ -350,6 +364,7 @@ stdsp_synapse< targetidentifierT >::stdsp_synapse()
   , mu_plus_( 1.0 )
   , mu_minus_( 1.0 )
   , Wmax_( 100.0 )
+  , Wmin_( 10.0 )
   , Pmax_( 100.0 )  
   , th_perm_( 10.0 )  
   , Kplus_( 0.0 ) 
@@ -377,6 +392,7 @@ stdsp_synapse< targetidentifierT >::get_status( DictionaryDatum& d ) const
   def< double >( d, names::mu_plus, mu_plus_ );
   def< double >( d, names::mu_minus, mu_minus_ );
   def< double >( d, names::Wmax, Wmax_ ); 
+  def< double >( d, names::Wmin, Wmin_ ); 
   def< double >( d, names::Pmax, Pmax_ ); 
   def< double >( d, names::hs, hs_ ); 
   def< double >( d, names::It, It_ ); 
@@ -402,6 +418,7 @@ stdsp_synapse< targetidentifierT >::set_status( const DictionaryDatum& d,
   updateValue< double >( d, names::mu_plus, mu_plus_ );
   updateValue< double >( d, names::mu_minus, mu_minus_ );
   updateValue< double >( d, names::Wmax, Wmax_ );
+  updateValue< double >( d, names::Wmin, Wmin_ );
   updateValue< double >( d, names::Pmax, Pmax_ );
   updateValue< double >( d, names::hs, hs_ );
   updateValue< double >( d, names::It, It_ );
