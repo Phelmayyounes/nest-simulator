@@ -243,7 +243,7 @@ private:
   double th_perm_;
   double t_lastspike_;
   double It_;
-  double max_dt_ = -100.;
+  double max_dt_ = -50.;
   double min_dt_ = -4.;
   double init_perm_ = permanence_;
 };
@@ -312,6 +312,7 @@ stdsp_synapse< targetidentifierT >::send( Event& e,
       if ( minus_dt > max_dt_ and minus_dt < min_dt_ ){
           
           // hebbian learning     
+          //permanence_ = facilitate_exp_( permanence_, Kplus_ * std::exp( minus_dt / tau_plus_ ));
           permanence_ = facilitate_exp_( permanence_, 1. );
           
           // homeostasis control
