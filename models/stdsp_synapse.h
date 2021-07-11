@@ -316,7 +316,7 @@ stdsp_synapse< targetidentifierT >::send( Event& e,
           permanence_ = facilitate_exp_( permanence_, 1. );
           
           // homeostasis control
-          permanence_ += hs_* (It_ - Ic); 
+          permanence_ += hs_* (It_ - Ic) * Pmax_; 
       }
    }
    
