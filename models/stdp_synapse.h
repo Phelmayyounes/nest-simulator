@@ -237,7 +237,7 @@ private:
   depress_( double w )
   {
     //printf("# Depress #");
-    w = w - alpha_ * Wmax_;
+    w = w - lambda_minus_ * Wmax_;
     return w > init_weight_ ? w : init_weight_;
   }
 
