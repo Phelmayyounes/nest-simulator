@@ -213,14 +213,14 @@ private:
   double
   facilitate_exp_( double w, double kplus )
   {
-    double norm_w = ( w / Wmax_ ) + ( lambda_ * std::pow( 1.0 - ( w / Wmax_ ), mu_plus_ ) * kplus);
+    double norm_w = ( w / Wmax_ ) + ( lambda_plus_ * std::pow( 1.0 - ( w / Wmax_ ), mu_plus_ ) * kplus);
     return norm_w < 1.0 ? norm_w * Wmax_ : Wmax_;
   }
 
   double
   facilitate_( double w_old, double kplus)
   {
-    double w =  w_old + ( lambda_ * kplus * Wmax_);    
+    double w =  w_old + ( lambda_plus_ * kplus * Wmax_);    
 
     return w < Wmax_ ? w : Wmax_;
   }
@@ -229,7 +229,7 @@ private:
   depress_exp_( double w, double kminus )
   {
       double norm_w = ( w / Wmax_ )
-      - ( alpha_ * lambda_ * std::pow( w / Wmax_, mu_minus_ ) * kminus );
+      - ( alpha_ * lambda_minus_ * std::pow( w / Wmax_, mu_minus_ ) * kminus );
     return norm_w > 0.0 ? norm_w * Wmax_ : 0.0;
   }
 
@@ -244,14 +244,15 @@ private:
   // data members of each connection
   double weight_;
   double tau_plus_;
-  double lambda_;
+  double lambda_plus_;
+  double lambda_minus_;
   double alpha_;
   double mu_plus_;
   double mu_minus_;
   double Wmax_;
   double Kplus_;
-  double It_;
-  double hs_;
+  double zt_;
+  double lambda_h_;
 
   double t_mean_;
   double t_var_;
@@ -288,7 +289,7 @@ stdp_synapse< targetidentifierT >::send( Event& e, thread t, const CommonSynapse
   double dendritic_delay = get_delay();
 
   //bool reach_max_activity = target->get_reach_max_activity();
-  double Ic = target->get_dendritic_firing_rate();
+  double z = target->get_dendritic_firing_rate();
 
   // get spike history in relevant range (t1, t2] from post-synaptic neuron
   std::deque< histentry >::iterator start;
@@ -323,7 +324,7 @@ stdp_synapse< targetidentifierT >::send( Event& e, thread t, const CommonSynapse
         weight_ = facilitate_exp_( weight_, 1. );
        
         // homoestasis control
-        weight_ += hs_ * (It_ - Ic) * Wmax_; 
+        weight_ += lambda_h_ * (zt_ - z) * Wmax_; 
     }
 
   }
@@ -357,10 +358,11 @@ stdp_synapse< targetidentifierT >::stdp_synapse()
   : ConnectionBase()
   , weight_( 1.0 )
   , tau_plus_( 20.0 )
-  , lambda_( 0.01 )
+  , lambda_plus_( 0.01 )
+  , lambda_minus_( 0.01 )
   , alpha_( 1.0 )
-  , It_( 1.0 )
-  , hs_( 0.01 )
+  , zt_( 1.0 )
+  , lambda_h_( 0.01 )
   , mu_plus_( 0.005 )
   , mu_minus_( 1.0 )
   , Wmax_( 100.0 )
@@ -378,10 +380,11 @@ stdp_synapse< targetidentifierT >::get_status( DictionaryDatum& d ) const
   ConnectionBase::get_status( d );
   def< double >( d, names::weight, weight_ );
   def< double >( d, names::tau_plus, tau_plus_ );
-  def< double >( d, names::lambda, lambda_ );
+  def< double >( d, names::lambda_plus, lambda_plus_ );
+  def< double >( d, names::lambda_minus, lambda_minus_ );
   def< double >( d, names::alpha, alpha_ );
-  def< double >( d, names::It, It_ );
-  def< double >( d, names::hs, hs_ );
+  def< double >( d, names::zt, zt_ );
+  def< double >( d, names::lambda_h, lambda_h_ );
   def< double >( d, names::mu_plus, mu_plus_ );
   def< double >( d, names::mu_minus, mu_minus_ );
   def< double >( d, names::t_mean, t_mean_ );
@@ -397,10 +400,11 @@ stdp_synapse< targetidentifierT >::set_status( const DictionaryDatum& d, Connect
   ConnectionBase::set_status( d, cm );
   updateValue< double >( d, names::weight, weight_ );
   updateValue< double >( d, names::tau_plus, tau_plus_ );
-  updateValue< double >( d, names::lambda, lambda_ );
+  updateValue< double >( d, names::lambda_plus, lambda_plus_ );
+  updateValue< double >( d, names::lambda_minus, lambda_minus_ );
   updateValue< double >( d, names::alpha, alpha_ );
-  updateValue< double >( d, names::It, It_ );
-  updateValue< double >( d, names::hs, hs_ );
+  updateValue< double >( d, names::zt, zt_ );
+  updateValue< double >( d, names::lambda_h, lambda_h_ );
   updateValue< double >( d, names::mu_plus, mu_plus_ );
   updateValue< double >( d, names::mu_minus, mu_minus_ );
   updateValue< double >( d, names::t_mean, t_mean_ );
